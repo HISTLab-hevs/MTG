@@ -1,0 +1,52 @@
+<dialog class="modal course-modal" id="course-edit-dialog">
+  <form class="form" method="post" action="/courses/{{ course.id }}/edit">
+    <div class="modal-head">
+      <h3>Edit course</h3>
+    </div>
+
+    <label class="form-field">
+      <span class="field-label-row">
+        <span>Title</span>
+        <span class="char-count" data-count-for="title">0/80</span>
+      </span>
+      <input type="text" name="title" required maxlength="80"
+             value="{{ course.title }}" placeholder="e.g. Operating Systems">
+    </label>
+
+    <label class="form-field">
+      <span class="field-label-row">
+        <span>Description</span>
+        <span class="char-count" data-count-for="description">0/240</span>
+      </span>
+      <textarea class="auto-grow" name="description" rows="2" maxlength="240"
+                placeholder="Optional short description">{{ course.description or "" }}</textarea>
+    </label>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" data-close-modal>Cancel</button>
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  (function () {
+    const dlg = document.getElementById("course-edit-dialog");
+    if (!dlg) return;
+    if (!dlg.open) dlg.showModal();
+    // Initialize injected fields; scope counters to this dialog.
+    dlg.querySelectorAll("input[maxlength], textarea[maxlength]").forEach((el) => {
+      if (el.classList.contains("auto-grow") && window.resizeAutoGrow) resizeAutoGrow(el);
+      const counter = dlg.querySelector(`[data-count-for="${el.name}"]`);
+      if (counter && el.maxLength > 0) counter.textContent = `${el.value.length}/${el.maxLength}`;
+      el.addEventListener("input", () => {
+        if (counter && el.maxLength > 0) counter.textContent = `${el.value.length}/${el.maxLength}`;
+      });
+    });
+    const close = () => { dlg.close(); dlg.remove(); };
+    dlg.querySelector("[data-close-modal]").addEventListener("click", close);
+    dlg.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+  })();
+</script>

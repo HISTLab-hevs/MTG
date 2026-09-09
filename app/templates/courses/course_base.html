@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block topbar_title %}
+<span class="topbar-chip" title="Course">
+  {{ icon.book() }}
+  <span class="topbar-chip-text">{{ course.title }}</span>
+</span>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav">
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  <div class="sidebar-section">{{ course.title }}</div>
+  <a class="nav-item {{ 'active' if active_tab == 'overview' }}"
+     href="/courses/{{ course.id }}/overview">Overview</a>
+  <a class="nav-item {{ 'active' if active_tab == 'materials' }}"
+     href="/courses/{{ course.id }}/materials">Material</a>
+  <a class="nav-item {{ 'active' if active_tab == 'rules' }}"
+     href="/courses/{{ course.id }}/rules">Rules</a>
+  <a class="nav-item {{ 'active' if active_tab == 'report' }}"
+     href="/courses/{{ course.id }}/report">Analysis</a>
+</nav>
+{% endblock %}

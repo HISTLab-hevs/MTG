@@ -1,0 +1,107 @@
+/* MTG · Mind The Gap, the app shell: sidebar, topbar and content grid.
+   The frame every signed-in page renders inside. */
+
+.app-shell { display: flex; align-items: flex-start; min-height: 100vh; }
+.app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 100vh; }
+.content { padding: 1.75rem 2rem; max-width: 1280px; width: 100%; margin: 0 auto; }
+/* Use the extra room on large desktop monitors across every application page,
+   while keeping a cap so prose and report tables do not become excessively
+   wide on ultrawide displays. */
+@media (min-width: 1600px) {
+  .content { max-width: min(2100px, calc(100vw - 232px - 5rem)); }
+}
+.page-header { margin-bottom: 1.25rem; }
+/* "Up a level", above the page title on the left, where a breadcrumb goes. It
+   is navigation rather than an action on this page, so it is deliberately not
+   a button and never sits in the action row on the right: keeping one fixed
+   place for "back" is what makes it findable without looking. */
+.back-link {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  margin-bottom: 0.5rem; color: var(--muted);
+  font-size: 0.86rem; font-weight: 600;
+}
+.back-link:hover { color: var(--accent); text-decoration: none; }
+.back-link .icon { width: 0.95rem; height: 0.95rem; }
+.grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 900px) { .grid-2col { grid-template-columns: 1fr; } }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 232px;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+  background: var(--ink);
+  color: var(--ink-text);
+  padding: 1.4rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+}
+/* "How it works" is pinned to the bottom of the sidebar on every page. */
+/* About + How it works sit together at the bottom of the sidebar, below the
+   course tabs, since they are read once rather than navigated daily. */
+.sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+.sidebar-brand { padding: 0 0.6rem 1.4rem; display: flex; flex-direction: column; }
+.brand-mark { font-weight: 800; font-size: 1.25rem; color: #fff; letter-spacing: 0.05em; }
+.brand-mark::after { content: "."; color: var(--accent); }
+.brand-sub { font-size: 0.74rem; color: var(--ink-text); letter-spacing: 0.02em; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+.sidebar-section {
+  padding: 1rem 0.6rem 0.35rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #847d7f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-item {
+  padding: 0.5rem 0.7rem;
+  border-radius: 7px;
+  color: var(--ink-text);
+  font-size: 0.92rem;
+}
+.nav-item:hover { background: rgba(255, 255, 255, 0.06); color: #fff; text-decoration: none; }
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.nav-back { font-size: 0.85rem; }
+
+/* ---------- Topbar ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 2rem;
+  /* Height the sticky report chat aligns under so its header isn't covered. */
+  min-height: var(--topbar-h, 3.25rem);
+  box-sizing: border-box;
+}
+.topbar-title { font-weight: 600; min-width: 0; }
+.topbar-user { display: flex; align-items: center; gap: 0.7rem; }
+.user-name { font-size: 0.9rem; }
+/* A small mark next to a label: a book for the course you are in, a person for
+   the account you are signed in as. The glyph is muted and the words keep the
+   ink, so the icon locates the label without competing with it. */
+.topbar-chip { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; }
+.topbar-chip .icon { color: var(--muted); width: 1rem; height: 1rem; }
+.topbar-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Stats ---------- */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+@media (max-width: 700px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+.stat-card { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 0; }
+.stat-value { font-size: 1.7rem; font-weight: 700; }
+.stat-label { color: var(--muted); font-size: 0.84rem; }

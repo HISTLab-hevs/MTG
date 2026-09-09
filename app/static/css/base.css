@@ -1,0 +1,435 @@
+/* MTG · Mind The Gap, design tokens and primitives.
+   Loaded first: everything here is either a custom property other sheets read,
+   or a base element and control style they build on. */
+
+/* The [hidden] attribute must win over component display rules, such as a
+   button set to inline-flex, so toggling it from JS really hides the element. */
+[hidden] { display: none !important; }
+
+:root {
+  --bg: #f6f5f4;
+  --surface: #ffffff;
+  --border: #e7e3e1;
+  --text: #181314;
+  --muted: #6f686a;
+  --accent: #c8102e;
+  --accent-dark: #9c0c23;
+  --accent-soft: #fbeaed;
+  --ink: #141114;
+  --ink-text: #b6b0b2;
+  --success: #1e7a4c;
+  --success-bg: #e4f3ea;
+  --warning: #91600c;
+  --warning-bg: #fcf1d9;
+  --danger: #c8102e;
+  --info: #1d4ed8;
+  --info-bg: #e6edfd;
+  /* Darker, less saturated blue for body text on --info-bg. The bright --info
+     is a fine accent for borders and icons, but as small text on a tinted
+     panel it fringes while scrolling. */
+  --info-ink: #1e3a8a;
+  /* Custom (professor-authored) rules, kept clear of --info: the two appear
+     side by side on a rule row. */
+  --custom: #6b3fa0;
+  --custom-bg: #f0e9f8;
+  --neutral: #55504f;
+  --neutral-bg: #edebea;
+  /* Button fills, one step apart, so a control reads as raised at rest and
+     visibly reacts to hover and to the press. Kept as tokens because the same
+     three steps are used by .btn, .btn-icon and the file-picker button. */
+  --btn-bg: #f7f5f4;
+  --btn-bg-hover: #eceae8;
+  --btn-bg-active: #e2dedc;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(24, 19, 20, 0.06);
+  --topbar-h: 3.25rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+/* ---------- Typography ---------- */
+
+/* Headings separate from body text on three levels at once, rather than on size
+   alone, as Stripe, Linear and GitHub Primer all do:
+     size    a clear jump per step; never smaller than the text it introduces;
+     weight  700 to 650 against the body's 400;
+     colour  full-strength ink, while supporting prose steps back to --muted.
+   Tight letter-spacing on the large sizes is the usual optical correction. */
+h1 { font-size: 1.7rem; margin: 0 0 0.35rem; font-weight: 700; letter-spacing: -0.021em; line-height: 1.25; }
+h2 { font-size: 1.2rem; margin: 0 0 0.5rem; font-weight: 680; letter-spacing: -0.012em; line-height: 1.3; }
+h3 { font-size: 1.04rem; margin: 0 0 0.3rem; font-weight: 650; letter-spacing: -0.005em; line-height: 1.35; }
+/* The line under a card title is support, not a second title: one step down in
+   size and in colour, so the pair reads as heading + explanation. */
+.card > h2 + p,
+.page-header > h1 + p,
+.page-header > div > h1 + p { font-size: 0.9rem; color: var(--muted); margin-top: 0; }
+code { font-size: 0.8em; background: var(--bg); padding: 2px 5px; border-radius: 4px; }
+
+/* ---------- Buttons ---------- */
+
+/* A secondary button rests on a tint a step off the card, the way Primer,
+   Stripe and Linear draw a default button, and darkens on hover: "this is a
+   control" legible at rest, "the pointer is on it" legible in motion. The
+   pressed state sinks one step further, completing the feedback loop. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.05rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--btn-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms, border-color 120ms, color 120ms;
+}
+.btn:hover:not(:disabled) { background: var(--btn-bg-hover); border-color: var(--muted); }
+.btn:active:not(:disabled) { background: var(--btn-bg-active); }
+/* One focus ring for every control, so keyboard users always see where they
+   are. :focus-visible, not :focus, so a mouse click does not leave a ring. */
+.btn:focus-visible,
+.rule-example:focus-visible,
+.chat-starter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
+.btn-primary:active:not(:disabled) { background: var(--accent-dark); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--accent); }
+.btn-ghost:hover:not(:disabled) { background: var(--accent-soft); border-color: transparent; }
+/* Destructive, but not shouting: tinted at rest so it is clearly a button and
+   clearly the red one, filling solid only when the pointer commits to it. */
+.btn-danger { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--accent-dark); }
+.btn-danger:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-sm { padding: 0.28rem 0.65rem; font-size: 0.82rem; }
+.btn-block { width: 100%; justify-content: center; }
+
+/* ---------- Icons ---------- */
+
+/* Line icons (see templates/_icons.html). The glyph is drawn on a 24-unit grid
+   with stroke: currentColor, so it takes the colour of whatever it sits in and
+   one size rule here governs every icon in the app. */
+.icon { width: 1.05rem; height: 1.05rem; flex-shrink: 0; display: block; }
+
+/* Icon-only action button: a square tap target with the glyph centred, used
+   wherever a row already says what it is about and a word would only repeat the
+   name next to it (open / edit / delete on a material, a rule, a version).
+   The action is still named for assistive tech and on hover, via aria-label +
+   title on the control, which is why the icon itself carries no text.
+
+   Quiet by default and revealed by hover, the pattern GitHub and Linear use for
+   row actions: colour marks the one destructive action, not the whole strip. */
+.btn-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.95rem; height: 1.95rem; padding: 0; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: var(--btn-bg); color: var(--muted);
+  cursor: pointer; transition: background 120ms, color 120ms, border-color 120ms;
+}
+.btn-icon:hover:not(:disabled) { background: var(--btn-bg-hover); color: var(--text); border-color: var(--muted); }
+.btn-icon:active:not(:disabled) { background: var(--btn-bg-active); }
+.btn-icon:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn-icon:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Delete keeps a faint red at rest, enough to be findable among its neighbours
+   without a strip of alarm on every row, and commits to solid red on hover. */
+.btn-icon-danger { color: var(--accent); }
+.btn-icon-danger:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* Icon buttons sitting together (a row's action strip) keep a single, uniform
+   gap so the eye reads them as one group, and each control keeps the same
+   footprint whether it is a bare <button> or a one-button <form>. */
+.icon-actions { display: inline-flex; align-items: center; gap: 0.15rem; flex-shrink: 0; }
+.icon-actions > form { display: inline-flex; margin: 0; }
+
+/* ---------- Forms ---------- */
+.form { display: flex; flex-direction: column; gap: 0.9rem; }
+.form-row { display: flex; gap: 0.85rem; }
+.form-row .form-field { flex: 1; }
+.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.form-field span { font-size: 0.82rem; font-weight: 600; }
+.form-field input,
+.form-field select,
+.form-field textarea {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  background: var(--surface);
+  transition: border-color 120ms;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+/* Selects lose the OS widget chrome for a flat field with our own chevron
+   (same recipe as GitHub Primer/Radix); the dropdown itself stays native, so
+   on mobile it still opens as the system picker. */
+.form-field select,
+.contract-field-agg select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.1rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236f686a'%3E%3Cpath d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1rem;
+  cursor: pointer;
+}
+.form-field select:hover,
+.contract-field-agg select:hover { border-color: var(--muted); }
+.upload-form { flex-direction: row; align-items: center; flex-wrap: wrap; }
+.upload-form .form-field { flex-direction: row; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+/* Footer of the upload form: the rules of the form on the left, the submit
+   pinned right. Full-width row so the button holds one predictable place at the
+   end of the form however tall the type picker grows. */
+.upload-foot {
+  flex: 1 1 100%; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.75rem 1.5rem;
+  padding-top: 0.9rem; border-top: 1px solid var(--border);
+}
+.upload-hint { margin: 0; flex: 1 1 22rem; }
+.upload-submit { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
+input[type="file"] { font: inherit; font-size: 0.88rem; color: var(--muted); }
+
+/* Multi-select document-type picker on the upload form: pill-style checkboxes
+   so a document can be tagged with several types at once. */
+.doc-type-options { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.doc-type-option {
+  display: grid; grid-template-columns: auto 1fr; align-items: start;
+  column-gap: 0.45rem; row-gap: 0.15rem; flex: 1 1 14rem; max-width: 18rem;
+  padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.6rem;
+  background: var(--surface); font-size: 0.85rem; cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+}
+.doc-type-option:hover { border-color: var(--accent); }
+.doc-type-option input { width: auto; margin: 0.1rem 0 0; accent-color: var(--accent); cursor: pointer; }
+.doc-type-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.doc-type-name { font-weight: 600; }
+.doc-type-desc { grid-column: 2; color: var(--muted); font-size: 0.78rem; line-height: 1.25; }
+/* "Select all" is a quiet text action sitting on the field's label line, not a
+   control styled like the choices it acts on: that is the convention for a
+   select-all over a list: Gmail, GitHub and Linear all place it outside the
+   set, never inside it.
+
+   The fieldset is itself the flex row (legend, shortcut, then the pills on
+   their own line), so no wrapper div is needed: a <legend> is valid only as the
+   first child of its <fieldset>, and boxing the pair would strip the fieldset
+   of its accessible name. */
+.doc-type-field { border: none; padding: 0; margin: 0; min-width: 0;
+  display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 1rem; }
+.doc-type-field legend { flex: 1 1 auto; font-size: 0.82rem; font-weight: 600;
+  padding: 0; margin-bottom: 0.35rem; }
+.doc-type-toggle {
+  flex: 0 0 auto; padding: 0; border: none; background: none; font: inherit;
+  font-size: 0.78rem; font-weight: 600; color: var(--accent); cursor: pointer;
+}
+.doc-type-toggle:hover { text-decoration: underline; }
+.doc-type-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+/* The choices take a full line of their own under the label row. */
+.doc-type-field .doc-type-options,
+.doc-type-field .doc-type-multi-note,
+.doc-type-field .field-error { flex: 1 1 100%; }
+/* Flag the picker when the professor tries to submit with nothing selected. */
+.doc-type-field.has-error .doc-type-options { outline: 1px solid var(--accent);
+  outline-offset: 4px; border-radius: 0.6rem; }
+
+/* Rule type pills (add form + edit modal): compact single-line pills that show
+   the FULL type name and wrap to the next row when they don't fit, so nothing is
+   truncated and they never overflow on narrow/mobile screens. */
+.rule-type-options { flex-wrap: wrap; }
+.rule-type-options .doc-type-option { flex: 0 1 auto; min-width: 0; align-items: center;
+  grid-template-columns: auto auto; white-space: nowrap; }
+.rule-type-options .doc-type-name { font-weight: 600; }
+/* Rule text on its own line with Generate to its right; the textarea grows and
+   the character counter sits on its own strip at the bottom of the box, right-
+   aligned, so it never overlaps the text as it grows nor sits on the border. */
+.rule-text-row { display: flex; align-items: flex-end; gap: 0.6rem; }
+.rule-text-box { flex: 1; min-width: 0; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--surface); overflow: hidden;
+  display: flex; flex-direction: column; }
+.rule-text-box:focus-within { border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft); }
+.rule-text-box textarea { width: 100%; min-height: 2.75rem; border: none;
+  background: transparent; box-shadow: none; resize: none; }
+.rule-text-box textarea:focus { outline: none; box-shadow: none; }
+.rule-char-count { align-self: flex-end; margin: 0; padding: 0.15rem 0.6rem 0.35rem;
+  pointer-events: none; }
+.rule-text-row .btn { flex: 0 0 auto; }
+
+/* Clickable example rules under the form. */
+.rule-help .rule-examples { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.rule-example { border: 1px dashed var(--border); background: var(--surface);
+  border-radius: 999px; padding: 0.3rem 0.75rem; font: inherit; font-size: 0.82rem;
+  color: var(--text); cursor: pointer; transition: border-color 120ms, background 120ms; }
+.rule-example:hover { border-color: var(--accent); border-style: solid;
+  background: var(--accent-soft); }
+/* On narrow screens let the pills wrap rather than squash unreadably. */
+@media (max-width: 720px) { .rule-type-options { flex-wrap: wrap; } }
+/* Live note shown only when 2+ types are selected (see materials.html). */
+.doc-type-multi-note { margin: 0.6rem 0 0; padding: 0.5rem 0.7rem; font-size: 0.8rem;
+  line-height: 1.35; color: var(--text); background: var(--accent-soft);
+  border-left: 3px solid var(--accent); border-radius: 4px; }
+input[type="file"]::file-selector-button {
+  margin-right: 0.7rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+input[type="file"]::file-selector-button:hover { border-color: var(--text); }
+.hint { color: var(--muted); font-size: 0.82rem; margin: 0.6rem 0 0; }
+/* A hint that carries a caution (a failed run, an archived report): same size
+   as a plain hint, but tinted and rules-off with a bar so it is not read as
+   ordinary small print. */
+.hint-warn {
+  color: var(--warning); background: var(--warning-bg);
+  border-left: 3px solid var(--warning); border-radius: 0 6px 6px 0;
+  padding: 0.5rem 0.7rem;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.hint-warn strong { color: inherit; }
+/* A hint that explains why an action is unavailable: informative, not a
+   warning, so it carries the neutral-blue tint rather than the amber one. */
+.hint-info {
+  color: var(--info-ink); background: var(--info-bg);
+  border-left: 3px solid var(--info); border-radius: 0 6px 6px 0;
+  padding: 0.5rem 0.7rem; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.hint-info strong { color: inherit; }
+.hint-info a { color: var(--info-ink); text-decoration: underline; }
+
+/* Drag-and-drop upload zone: full-width target on the upload form. The real
+   <input type=file> sits inside the label so click-to-browse still works and the
+   form/endpoint are unchanged; JS only assigns dropped files and shows the name. */
+.dropzone {
+  flex: 1 1 100%;
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border: 2px dashed var(--border); border-radius: 0.7rem;
+  background: var(--surface); cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+}
+.dropzone:hover { border-color: var(--accent); }
+.dropzone.is-dragover { border-color: var(--accent); background: var(--accent-soft); }
+/* The file input inside is visually hidden, so :has() puts the invalid state on
+   the zone the professor can actually see. */
+.dropzone:has(input.is-invalid) { border-color: var(--accent); background: var(--accent-soft); }
+.dropzone-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.dropzone-icon { display: flex; color: var(--muted); }
+.dropzone-icon .icon { width: 1.5rem; height: 1.5rem; }
+.dropzone-text { display: flex; flex-direction: column; font-size: 0.9rem; }
+.dropzone-prompt { color: var(--muted); }
+.dropzone-prompt u { color: var(--accent); }
+.dropzone-filename { font-weight: 600; color: var(--text); }
+
+/* Field validation errors (shown by app.js instead of native browser bubbles).
+   An error the professor must act on is not small print: body size, never
+   smaller than the hint text beside it, with a warning mark, and announced to
+   screen readers by the role app.js gives it. */
+input.is-invalid, select.is-invalid, textarea.is-invalid { border-color: var(--accent); }
+.field-error {
+  flex-basis: 100%; margin: 0.35rem 0 0;
+  display: flex; align-items: flex-start; gap: 0.35rem;
+  color: var(--accent-dark); font-size: 0.88rem; font-weight: 600; line-height: 1.4;
+}
+.field-error::before {
+  content: "!"; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.05rem; height: 1.05rem; margin-top: 0.05rem;
+  border-radius: 50%; background: var(--accent); color: #fff;
+  font-size: 0.72rem; font-weight: 700; line-height: 1;
+}
+
+/* Badges.
+   Quiet labels rather than loud pills: sentence case, a soft rectangle instead
+   of a full lozenge, and a hairline border so the tint carries an edge and the
+   label reads at small sizes without shouting. Same recipe as GitHub Primer and
+   Linear labels. The border colour is derived from the text colour via
+   color-mix, so every variant only has to state its own two colours. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.badge-muted,
+.badge-uploaded,
+.badge-pending { background: var(--neutral-bg); color: var(--neutral);
+  border-color: color-mix(in srgb, var(--neutral) 22%, transparent); }
+.badge-rendering,
+.badge-extracting,
+.badge-embedding,
+.badge-generating { background: var(--warning-bg); color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 25%, transparent); }
+.badge-ready { background: var(--success-bg); color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 25%, transparent); }
+/* Rule origin badges: Custom in violet, distinct from the green of an enabled
+   switch AND from the blue "also applies to" note, which sits in the same row
+   and would otherwise read as the same kind of information. Default stays
+   neutral grey (badge-muted, set in the markup). */
+.badge-custom { background: var(--custom-bg); color: var(--custom);
+  border-color: color-mix(in srgb, var(--custom) 25%, transparent); }
+/* Rule identity code (sy1, s3, a2 and so on): monospace so it reads as an id,
+   shown wherever the rule appears (Rules page, verdicts, history diff). */
+.badge-code {
+  background: var(--neutral-bg);
+  color: var(--neutral);
+  border-color: color-mix(in srgb, var(--neutral) 20%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+}
+.badge-proposed { background: var(--accent-soft); color: var(--accent-dark);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.badge-failed { background: var(--accent-soft); color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+
+/* ---------- Spinner ---------- */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.spinner-sm { width: 10px; height: 10px; border-top-color: currentColor; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.htmx-indicator { opacity: 0; transition: opacity 150ms; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { opacity: 1; }
+
+/* ---------- Alerts ---------- */
+.alert { padding: 0.65rem 0.9rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+.alert-success { background: var(--success-bg); color: var(--success); }
+.alert-error { background: var(--accent-soft); color: var(--accent-dark); }
+.alert-info { background: var(--neutral-bg); color: var(--neutral); }
+
+/* ---------- Utilities ---------- */
+.empty-state { text-align: center; padding: 1.5rem 1rem; }
+.empty-state p { margin: 0.25rem 0; }
+.text-muted { color: var(--muted); }
+.text-right { text-align: right; }

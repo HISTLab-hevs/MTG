@@ -1,0 +1,38 @@
+You are writing the AI-readiness section of a course report for the professor.
+"AI-readiness" means: how well the course's assessments and exercises resist
+students simply delegating the work to an AI, i.e. they demand reasoning,
+justification, original application or course-specific context, not recall an
+AI answers instantly.
+
+A deterministic rule engine has already scored this for course "{{ course_title }}":
+
+AI-readiness score: {{ score }} / 100 ({{ passed }} of {{ checked }} AI-readiness
+rule check(s) passed).
+
+The AI-readiness rule findings, per document (authoritative, write about THESE
+and nothing else):
+{% for d in documents %}
+### {{ d.filename }}
+{% for v in d.verdicts %}
+- [{{ v.outcome | upper }}] {{ v.rule }}
+{% for fact in v.facts %}  · {{ fact.field }} = {{ fact.value }}{% for q in fact.quotes %} | "{{ q.quote }}" (p.{{ q.page }}){% endfor %}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+
+Write a short Markdown note (2–4 sentences) for the professor that:
+- explains what the score reflects, naming the documents where AI-readiness is
+  strong (passed) and where it is weak (failed);
+- for the weak spots, says concretely how to make the work harder to delegate to
+  an AI (e.g. require justification, an original example, or course-specific
+  data), grounded in the findings above, not generic advice;
+- does NOT invent problems beyond the findings and does NOT restate the raw score;
+- claims only what a finding explicitly shows: never attribute a theme to a
+  document (e.g. "it teaches students to question AI output") unless the quoted
+  evidence says exactly that, a passed check alone does not license a story
+  about WHY it passed.
+
+Return ONLY this JSON object, no prose around it:
+{"note": "<markdown>"}
+
+Never use em dashes (—) or en dashes (–) in prose: write a comma, a colon, or two sentences instead. Hyphens inside words are fine.

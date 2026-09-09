@@ -1,0 +1,569 @@
+{% extends "courses/course_base.html" %}
+{% block title %}Course report · {{ course.title }}{% endblock %}
+
+{% block content %}
+{# Only the undo response sets undone to true. #}
+{% macro editable_block(value, action, dom_id, undo_action, undoable, undone=False) %}
+{% include "courses/_editable_block.html" %}
+{% endmacro %}
+<a class="back-link" href="/courses/{{ course.id }}/report">
+  {{ icon.arrow_left() }} Analysis
+</a>
+<div class="page-header report-view-header">
+  <div>
+    <h1>
+      Course report
+      {% if not is_latest %}<span class="badge badge-muted">Past run</span>{% endif %}
+    </h1>
+    <p class="text-muted">
+      {{ report.created_at.strftime("%d %b %Y, %H:%M") }}
+      {%- if not is_latest %} ·
+      <a href="/courses/{{ course.id }}/report">open the latest report</a>
+      {%- endif %} ·
+      Issues come straight from the rule checks and stay the same on every run;
+      the suggested improvements are yours to edit.
+    </p>
+  </div>
+  <div class="report-view-actions">
+    <a class="btn" href="/courses/{{ course.id }}/report/{{ report.id }}/view/pdf">{{ icon.download() }} Download PDF</a>
+  </div>
+</div>
+
+
+{% if metrics %}
+<section class="card report-metrics">
+  <div class="report-block-head">
+    <h2>Course diagnostics</h2>
+    <span class="badge badge-muted" title="Facts the rule checks found. These stay the same on every run.">From rules</span>
+  </div>
+  <div class="metric-grid">
+    <div class="metric-gauge">
+      <div class="metric-score">{{ metrics.health_score }}<span>/100</span></div>
+      <div class="metric-label">Course health</div>
+      <p class="text-muted metric-sub">
+        Severity-weighted share of {{ metrics.passed }}/{{ metrics.checked }} rule
+        checks passed.
+        {% if metrics.high_severity_failures %}
+        <strong>{{ metrics.high_severity_failures }}</strong> high-severity issue(s).
+        {% endif %}
+      </p>
+    </div>
+    {% if metrics.ai_readiness_score is not none %}
+    <div class="metric-gauge">
+      <div class="metric-score">{{ metrics.ai_readiness_score }}<span>/100</span></div>
+      <div class="metric-label">AI-readiness</div>
+      <p class="text-muted metric-sub">
+        Severity-weighted share of {{ metrics.ai_readiness_passed }}/{{ metrics.ai_readiness_checked }}
+        AI-resistance check(s) passed: how well the work resists AI delegation.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  {% set radar = radar_svg(metrics) %}
+  {% set sev_bar = severity_bar_svg(metrics) %}
+  {% if radar or sev_bar %}
+  <div class="report-charts">
+    {% if radar %}
+    <figure class="report-chart">
+      <figcaption>Pass rate by improvement area</figcaption>
+      {{ radar }}
+    </figure>
+    {% endif %}
+    {% if sev_bar %}
+    <figure class="report-chart">
+      <figcaption>Failures by severity</figcaption>
+      {{ sev_bar }}
+    </figure>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <h3 class="report-sub">By improvement area</h3>
+  <p class="text-muted metric-area-hint">
+    Each rule belongs to one improvement area (learning outcomes, grading &
+    feedback, AI-readiness, content, clarity). The bar shows how many of that
+    area's checks the course <strong>passed</strong> out of how many were
+    checked; a failed high-severity rule weighs more in the course-health
+    score above.
+  </p>
+  <ul class="metric-bars">
+    {% for c in metrics.categories %}
+    <li class="metric-bar-row">
+      <span class="metric-bar-name">{{ category_label(c.category) }}</span>
+      <span class="metric-bar-track">
+        <span class="metric-bar-fill {{ 'is-fail' if c.passed == 0 else ('is-warn' if c.pass_pct < 60 else '') }}"
+              data-pct="{{ c.pass_pct }}"></span>
+      </span>
+      <span class="metric-bar-val {{ 'is-fail' if c.passed == 0 else '' }}"
+            title="{{ c.passed }} of {{ c.checked }} checks passed in this area">
+        {{ c.passed }}/{{ c.checked }} passed
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if summary_grid and summary_grid.rows %}
+<section class="card report-summary-grid">
+  <div class="report-block-head">
+    <h2>At a glance</h2>
+    <span class="badge badge-muted" title="Facts the rule checks found. These stay the same on every run.">From rules</span>
+  </div>
+  <p class="text-muted">
+    Each document against each improvement area: ✓ all checks pass, ✗ all fail,
+    ◐ a mix, – not checked for that document.
+  </p>
+  <div class="summary-grid-scroll">
+    <table class="summary-grid">
+      <thead>
+        <tr>
+          <th>Document</th>
+          {% for c in summary_grid.categories %}
+          <th>{{ category_label(c) }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in summary_grid.rows %}
+        <tr>
+          <th scope="row">
+            {{ row.filename }}
+            <span class="summary-grid-type">{{ doc_type_label(row.document_type) }}</span>
+          </th>
+          {% for cell in row.cells %}
+          <td class="grid-cell grid-{{ cell.state }}"
+              title="{{ cell.passed }} passed, {{ cell.failed }} failed">
+            {% if cell.state == "pass" %}✓{% elif cell.state == "fail" %}✗{% elif cell.state == "partial" %}◐{% else %}–{% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% if report.priorities_md %}
+<section class="card report-priorities">
+  <div class="report-block-head">
+    <h2>Fix these first</h2>
+    <span class="badge badge-warn">Priority</span>
+  </div>
+  <div class="report-prose">{{ report.priorities_md | markdown }}</div>
+</section>
+{% endif %}
+
+<div class="report-split">
+  <article class="report-doc-pane card">
+    {% if report.summary_md %}
+    <section class="report-block report-block-overall">
+      <div class="report-block-head">
+        <h2>Overall</h2>
+        <span class="badge badge-muted" title="Facts the rule checks found. These stay the same on every run.">From rules</span>
+      </div>
+      <p class="report-block-hint text-muted">
+        The course as a whole: the cross-cutting patterns behind the failed checks.
+      </p>
+      <div class="report-prose">{{ report.summary_md | markdown }}</div>
+    </section>
+    {% endif %}
+
+    <section class="report-block">
+      <div class="report-block-head">
+        <h2>Constructive alignment</h2>
+        <span class="badge badge-muted">Model judgement</span>
+      </div>
+      <p class="report-block-hint text-muted">
+        Do the objectives the syllabus states actually get taught and assessed,
+        and do the parts of the course connect? Judged across all documents.
+      </p>
+      <div class="report-prose">
+        {{ (report.alignment_md or "*Not judged for this report, it needs a syllabus and at least one graded assessment among the material.*") | markdown }}
+      </div>
+    </section>
+
+    {% if metrics and metrics.ai_readiness_note %}
+    <section class="report-block">
+      <div class="report-block-head">
+        <h2>AI-readiness</h2>
+        <span class="badge badge-muted" title="Facts the rule checks found. These stay the same on every run.">From rules</span>
+      </div>
+      <div class="report-prose">{{ metrics.ai_readiness_note | markdown }}</div>
+    </section>
+    {% endif %}
+
+    <section class="report-block report-block-editable">
+      <div class="report-block-head">
+        <h2>Course-level suggestions</h2>
+        <span class="badge badge-ready" title="A suggestion you can rewrite here or refine with the assistant.">Editable</span>
+      </div>
+      {% set save_url = "/courses/" ~ course.id ~ "/report/" ~ report.id ~ "/solutions" %}
+      {{ editable_block(report.solutions_md, save_url, "editable-course", save_url ~ "/undo", report.solutions_md_prev is not none) }}
+    </section>
+
+    {% for s in report.sections %}
+    <section class="report-doc-section">
+      <div class="report-block-head">
+        <h2>{{ s.filename }}</h2>
+        <span class="badge badge-muted">{{ doc_type_label(s.document_type) }}</span>
+      </div>
+      <div class="issue-fix">
+        <div class="issue-fix-col issue-fix-problem">
+          <h3 class="report-sub"><span class="issue-fix-tag tag-flag">⚑ AI-vulnerable / gaps found</span></h3>
+          <div class="report-prose">{{ (s.issues_md or "*No issues.*") | markdown }}</div>
+          {% set findings = findings_by_doc.get(s.document_id) %}
+          {% if findings %}
+          <details class="why-flagged">
+            <summary>Why flagged ({{ findings | length }})</summary>
+            <ul class="why-list">
+              {% for v in findings %}
+              <li class="why-item">
+                {% if v.rule.code %}<span class="badge badge-code">{{ v.rule.code }}</span>{% endif %}
+                <span class="badge badge-sev badge-sev-{{ v.severity }}"
+                      title="{{ v.severity | capitalize }} severity">
+                  {{ sev_letter(v.severity) }}
+                  <span class="sr-only">{{ v.severity | capitalize }} severity</span>
+                </span>
+                <span class="why-rule">{{ v.rule.text }}</span>
+                {% set facts = v.informative_facts %}
+                {% set quotes = v.evidence_quotes %}
+                {% if facts %}
+                <span class="why-quote why-facts">
+                  {% for f in facts %}{{ f.label }}: {% set items = f.value_display_items %}{% if items %}{{ items[:6] | join(" · ") }}{% if items | length > 6 %} · +{{ items | length - 6 }} more (see the analysis page){% endif %}{% else %}{{ f.value_display }}{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+                </span>
+                {% endif %}
+                {% if quotes %}
+                <span class="why-quote">
+                  {% for q in quotes[:3] %}Seen on p.{{ q.page }}: “{{ q.quote }}”{% if not loop.last %} · {% endif %}{% endfor %}
+                  {% if quotes | length > 3 %} · +{{ quotes | length - 3 }} more (see the analysis page){% endif %}
+                </span>
+                {% endif %}
+                {% if not facts and not quotes %}
+                <span class="why-quote">{{ v.evidence_caption }}</span>
+                {% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </details>
+          {% endif %}
+        </div>
+        <div class="issue-fix-col issue-fix-fix report-block-editable">
+          <h3 class="report-sub"><span class="issue-fix-tag tag-fix">➜ Suggested fix</span> <span class="report-sub-tag tag-editable">editable</span></h3>
+          {% set sec_url = "/courses/" ~ course.id ~ "/report/section/" ~ s.id ~ "/solutions" %}
+          {{ editable_block(s.solutions_md, sec_url, "editable-section-" ~ s.id, sec_url ~ "/undo", s.solutions_md_prev is not none) }}
+        </div>
+      </div>
+    </section>
+    {% endfor %}
+
+    {% if metrics and metrics.never_applicable %}
+    <details class="report-block report-na">
+      <summary class="report-block-head report-na-summary">
+        <h2>Checks that didn't apply ({{ metrics.never_applicable | length }})</h2>
+        <span class="badge badge-muted">Not counted in the score</span>
+      </summary>
+      <p class="report-block-hint text-muted">
+        Each of these rules looks for a specific situation (a graded
+        assessment, a mention of AI use, and so on) that never appears in the
+        analysed material. There was nothing to judge, so they are neither
+        passed nor failed and don't affect any score. One thing worth a glance:
+        if you expected that situation to be in the material (for example, a
+        graded assessment), its absence is itself the finding.
+      </p>
+      <ul class="item-list">
+        {% for n in metrics.never_applicable %}
+        <li class="item-row">
+          <div>
+            {% if n.code %}<span class="badge badge-code">{{ n.code }}</span>{% endif %}
+            {{ n.rule }}
+            {% if n.missing %}
+            <div class="text-muted">
+              Not found in the {{ n.documents }} document{{ "s" if n.documents != 1 }} checked:
+              {{ n.missing | join(" · ") | lower }}
+            </div>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </article>
+
+  <aside class="report-chat-pane card" id="report-chat">
+    <div class="report-chat-head">
+      <div class="report-chat-head-row">
+        <h2>Refine with the assistant</h2>
+        <button type="button" class="btn btn-ghost btn-sm chat-new" id="report-chat-new"
+                hidden title="Start a new chat and clear this conversation">
+          {{ icon.pencil() }} New chat
+        </button>
+      </div>
+      <p class="text-muted">
+        Discuss the suggestions and ask for changes; edits land live on the
+        left. Type <code>@</code> to pull a document's full text into the
+        conversation, so the assistant can answer about its exact content.
+      </p>
+      <p class="chat-disclaimer">
+        <span class="chat-disclaimer-icon" aria-hidden="true">ⓘ</span>
+        AI-generated answers may contain errors. If a response seems off or
+        incomplete, try rephrasing your question with more specific detail.
+      </p>
+    </div>
+    <ul class="chat-mention-source" id="chat-mention-source" hidden>
+      {% for s in report.sections %}
+      <li data-name="{{ s.filename }}">{{ s.filename }}</li>
+      {% endfor %}
+    </ul>
+    <div class="report-chat-log" id="report-chat-log">
+      <div class="chat-empty" id="report-chat-empty">
+        <p class="text-muted">The assistant works from this report's findings and
+          suggestions. It can explain why a document was flagged, or rewrite a
+          suggestion into text you can paste in. Tip: type <code>@</code> to point
+          it at one of your documents. Try one of these:</p>
+        <div class="chat-starters">
+          <button type="button" class="chat-starter"
+                  data-prompt="Which document has the most serious problems, and why?">
+            Where are the worst problems?
+          </button>
+          <button type="button" class="chat-starter"
+                  data-prompt="Explain the findings and the rules behind them for @">
+            Explain a document's findings
+          </button>
+          <button type="button" class="chat-starter"
+                  data-prompt="Rewrite the suggestions as concrete, ready-to-paste text for @">
+            Draft the fixes for a document
+          </button>
+        </div>
+      </div>
+    </div>
+    <form class="report-chat-form"
+          hx-post="/courses/{{ course.id }}/report/{{ report.id }}/chat"
+          hx-target="#report-chat-log" hx-swap="beforeend"
+          hx-disabled-elt="find button, find textarea">
+      <input type="hidden" name="history" id="report-chat-history" value="[]">
+      <div class="report-chat-input-wrap">
+        <ul class="mention-menu" id="mention-menu" hidden role="listbox"></ul>
+        <div class="report-chat-input">
+          {# JS blocks empty messages without native validation bubbles. #}
+          <textarea name="message" id="report-chat-message" rows="1"
+                    data-max-chars="16000"
+                    autocomplete="off"
+                    placeholder="Ask to explain, locate, or rewrite a finding… (@ to add a document)"></textarea>
+          <button class="btn btn-primary" type="submit" aria-label="Send" title="Send (Enter)">{{ icon.send() }}</button>
+        </div>
+      </div>
+    </form>
+  </aside>
+</div>
+
+<script>
+  // Delegate editing so swapped blocks work; save HTML as Markdown.
+  (function () {
+    const rendered = (block) => block.querySelector(".editable-rendered");
+    const setEditing = (block, editing) => {
+      const r = rendered(block);
+      r.contentEditable = editing ? "true" : "false";
+      r.classList.toggle("is-editing", editing);
+      block.querySelector(".js-edit-start").hidden = editing;
+      block.querySelector(".editable-editing-actions").hidden = !editing;
+      // Hide saved-history controls during unsaved edits.
+      const undoBtn = block.querySelector(".editable-undo-btn");
+      if (undoBtn) undoBtn.hidden = editing;
+      if (editing) { block.dataset.original = r.innerHTML; r.focus(); }
+    };
+    document.addEventListener("click", (e) => {
+      const start = e.target.closest(".js-edit-start");
+      const save = e.target.closest(".js-edit-save");
+      const cancel = e.target.closest(".js-edit-cancel");
+      const starter = e.target.closest(".chat-starter");
+      if (starter) {
+
+        const box = document.getElementById("report-chat-message");
+        const prompt = starter.dataset.prompt;
+        box.value = prompt;
+        box.focus();
+
+        const at = prompt.indexOf("@");
+        if (at !== -1) {
+          box.setSelectionRange(at + 1, at + 1);
+        }
+        box.dispatchEvent(new Event("input"));  // grow + trigger the @ menu
+        return;
+      }
+
+      const format = e.target.closest(".js-format");
+      if (format) {
+        document.execCommand(format.dataset.command, false, null);
+        syncFormatState(format.closest(".editable-suggestion"));
+        return;
+      }
+      if (start) setEditing(start.closest(".editable-suggestion"), true);
+      else if (cancel) cancelEdit(cancel.closest(".editable-suggestion"));
+      else if (save) saveEdit(save.closest(".editable-suggestion"));
+    });
+    // Preserve the selection when pressing format buttons.
+    document.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".js-format")) e.preventDefault();
+    });
+
+    const syncFormatState = (block) => {
+      if (!block) return;
+      block.querySelectorAll(".js-format").forEach((b) => {
+        let on = false;
+        try { on = document.queryCommandState(b.dataset.command); } catch { on = false; }
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    };
+    document.addEventListener("selectionchange", () => {
+      const r = document.activeElement?.closest?.(".editable-rendered.is-editing");
+      if (r) syncFormatState(r.closest(".editable-suggestion"));
+    });
+
+    const cancelEdit = (block) => {
+      rendered(block).innerHTML = block.dataset.original || "";
+      setEditing(block, false);
+    };
+    const saveEdit = (block) => {
+      const md = htmlToMarkdown(rendered(block));
+      block.querySelector("input[name=solutions_md]").value = md;
+      block.querySelector(".editable-form").requestSubmit();
+      setEditing(block, false);
+    };
+
+    // Esc cancels; Ctrl/Cmd+Enter saves; Enter inserts a newline.
+    document.addEventListener("keydown", (e) => {
+      const r = e.target.closest?.(".editable-rendered.is-editing");
+      if (!r) return;
+      const block = r.closest(".editable-suggestion");
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelEdit(block);
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        saveEdit(block);
+      } else if ((e.ctrlKey || e.metaKey) && "biBI".includes(e.key)) {
+        // Handle formatting shortcuts here to keep toolbar state in sync.
+        e.preventDefault();
+        document.execCommand(e.key.toLowerCase() === "b" ? "bold" : "italic");
+        syncFormatState(block);
+      }
+    });
+
+    const sizeBars = (root) =>
+      root.querySelectorAll(".metric-bar-fill[data-pct]").forEach((el) => {
+        el.style.width = `${el.dataset.pct}%`;
+      });
+    sizeBars(document);
+  })();
+
+  // Wait for app.js; persist chat history per user and course.
+  document.addEventListener("DOMContentLoaded", function () {
+    setupChat({
+      logId: "report-chat-log",
+      messageId: "report-chat-message",
+      historyId: "report-chat-history",
+      newBtnId: "report-chat-new",
+      emptyId: "report-chat-empty",
+      storeKey: "report-chat:{{ user.id }}:{{ course.id }}",
+      compactUrl: "/courses/{{ course.id }}/report/{{ report.id }}/chat/compact",
+      // Include edited block names in chat history.
+      assistantExtra: (turn) => {
+        const meta = turn.querySelector(".chat-msg-meta");
+        return meta ? ` [${meta.textContent.trim()}]` : "";
+      },
+    });
+  });
+
+  // Offer one document mention; Enter/Tab selects, arrows navigate, Esc closes.
+  (function () {
+    const message = document.getElementById("report-chat-message");
+    const menu = document.getElementById("mention-menu");
+    const source = document.getElementById("chat-mention-source");
+    if (!message || !menu || !source) return;
+    const docs = [...source.querySelectorAll("li")].map((li) => li.dataset.name);
+    let active = -1;        // highlighted item index
+    let matches = [];       // current filtered list
+    let tokenStart = -1;    // index of the "@" being completed
+
+    const close = () => { menu.hidden = true; active = -1; tokenStart = -1; };
+
+    const tokenAtCaret = () => {
+      const pos = message.selectionStart;
+      const text = message.value.slice(0, pos);
+      const at = text.lastIndexOf("@");
+      if (at === -1) return null;
+      const between = text.slice(at + 1);
+
+      if (/[\n]/.test(between)) return null;
+      return { start: at, query: between.toLowerCase() };
+    };
+    const render = () => {
+      menu.innerHTML = "";
+      matches.forEach((name, i) => {
+        const li = document.createElement("li");
+        li.className = "mention-item" + (i === active ? " is-active" : "");
+        li.textContent = name;
+        li.setAttribute("role", "option");
+        li.addEventListener("mousedown", (e) => { e.preventDefault(); choose(i); });
+        menu.appendChild(li);
+      });
+      menu.hidden = matches.length === 0;
+    };
+    // Allow only one resolvable document mention.
+    const lower = docs.map((d) => d.toLowerCase());
+    const hasMentionBefore = (tokenStart) => {
+      const re = /(?<!\w)@"([^"]+)"|(?<!\w)@([\w.\-]+)/g;
+      let m;
+      while ((m = re.exec(message.value))) {
+        if (m.index === tokenStart) continue;  // the token being typed now
+        const name = (m[1] || m[2] || "").toLowerCase();
+        if (lower.some((d) => d === name || d.startsWith(name))) return true;
+      }
+      return false;
+    };
+    const showHint = () => {
+      menu.innerHTML =
+        '<li class="mention-hint">One document at a time. The assistant reads a single document per message.</li>';
+      menu.hidden = false;
+    };
+    const refresh = () => {
+      const tok = tokenAtCaret();
+      if (!tok) return close();
+      tokenStart = tok.start;
+      if (hasMentionBefore(tok.start)) { showHint(); matches = []; active = -1; return; }
+      matches = docs.filter((d) => d.toLowerCase().includes(tok.query)).slice(0, 8);
+      active = matches.length ? 0 : -1;
+      render();
+    };
+    const choose = (i) => {
+      if (i < 0 || i >= matches.length) return;
+      const name = matches[i];
+      const pos = message.selectionStart;
+      const insert = /\s/.test(name) ? `@"${name}" ` : `@${name} `;
+      message.value =
+        message.value.slice(0, tokenStart) + insert + message.value.slice(pos);
+      const caret = tokenStart + insert.length;
+      message.setSelectionRange(caret, caret);
+      close();
+      message.focus();
+      message.dispatchEvent(new Event("input"));
+    };
+
+    message.addEventListener("input", refresh);
+    message.addEventListener("keydown", (e) => {
+      if (menu.hidden) return;
+      if (e.key === "ArrowDown") { e.preventDefault(); active = (active + 1) % matches.length; render(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); active = (active - 1 + matches.length) % matches.length; render(); }
+      else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); e.stopPropagation(); choose(active); }
+      else if (e.key === "Escape") { e.preventDefault(); close(); }
+    }, true);  // capture: run before the Enter-to-send handler
+    message.addEventListener("blur", () => setTimeout(close, 120));
+  })();
+</script>
+{% endblock %}

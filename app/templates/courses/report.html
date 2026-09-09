@@ -1,0 +1,38 @@
+{% extends "courses/course_base.html" %}
+{% block title %}Analysis · {{ course.title }}{% endblock %}
+
+{% set running = latest_run and latest_run.status in ("pending", "running", "reporting") %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Analysis</h1>
+  <p class="text-muted">
+    Deterministic rule checks run document by document over your processed
+    material.
+  </p>
+</div>
+
+<div id="report-area"
+     {% if running %}
+     hx-get="/courses/{{ course.id }}/report/panel"
+     hx-trigger="every 2s"
+     hx-target="#report-area"
+     hx-swap="innerHTML"
+     {% endif %}>
+  {% include "courses/_report_panel.html" %}
+</div>
+
+<script>
+  // app.js preserves expanded sections by data-key across swaps.
+  (function () {
+
+    const sizeProgress = () => {
+      document.querySelectorAll("#report-area .js-progress-bar[data-pct]").forEach(
+        (el) => { el.style.setProperty("--progress-width", `${el.dataset.pct}%`); }
+      );
+    };
+    document.body.addEventListener("htmx:afterSwap", sizeProgress);
+    sizeProgress();
+  })();
+</script>
+{% endblock %}

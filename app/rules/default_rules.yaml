@@ -1,0 +1,927 @@
+# Default course rules, seeded into every course (see app/services/rules.py).
+#
+# A focused, non-redundant, high-value set. Every rule is either (a)
+# grounded in direct faculty evidence from our focus groups, tagged with the
+# pedagogical target they cover, or (b) a well-established, course-agnostic
+# pedagogical principle backed by the teaching-and-assessment literature, tagged
+# [source: <ref>]. Rules that only restated another rule, or that depended on
+# brittle per-page counting, have been removed so each default earns its place
+# and a clean course does not drown in low-value flags.
+#
+# References. Every entry below was checked against the primary source (2026-08):
+# the citation resolves, and the claim the rule makes is one the source actually
+# supports. Where a source does NOT support the strong form of a claim, that is
+# recorded here rather than papered over, see [ai-resist] and [udl] especially.
+#
+#   [bloom]      Biggs (1996), "Enhancing teaching through constructive
+#                alignment", Higher Education 32:347-364,
+#                https://doi.org/10.1007/BF00138871; Anderson & Krathwohl (2001),
+#                revised Bloom's taxonomy. Biggs derives objectives "in terms of
+#                performances that represent a suitably high cognitive level" and
+#                is explicit that "understand"/"know"/"appreciate" are not
+#                observable and so cannot be assessed, which is precisely the
+#                distinction sy1 tests. Strong support, and the oldest and most
+#                replicated principle in this file.
+#                NOTE: constructive alignment justifies measurable performances
+#                and outcome-aligned rubrics (sy1, r3). It does NOT by itself
+#                establish that higher-order tasks resist AI, see [ai-limits].
+#   [transparent] Winkelmes et al. (2016), "A teaching intervention that increases
+#                underserved college students' success", Peer Review 18(1), #                national AAC&U study, n≈1,180 students: making assignment
+#                purpose/task/criteria explicit raised academic confidence,
+#                belonging and mastery of skills, with larger gains for
+#                first-generation and underserved students. Brookhart (2013),
+#                How to Create and Use Rubrics, ASCD: a rubric is "a coherent set
+#                of criteria ... that describes levels of performance quality",
+#                and criteria must relate to the learning rather than the task, #                the direct basis for r1 and r3.
+#                SCOPE NOTE: Winkelmes covers transparency of assignments and
+#                criteria (r1, and sy2 by extension: an unweighted component is
+#                an undisclosed criterion). It says nothing about spelling, so
+#                all1 is justified on professional-quality grounds, not by this
+#                study.
+#   [udl]        CAST, Universal Design for Learning Guidelines 3.0 (2024).
+#                HONEST LIMITATION: Boysen (2024), "A critical analysis of the
+#                research evidence behind CAST's UDL guidelines", Policy Futures
+#                in Education, https://doi.org/10.1177/14782103241255428, finds
+#                the empirical evidence for UDL as a framework weak. sy4 does not
+#                rest on UDL's efficacy: an accommodation statement is a legal and
+#                institutional requirement (ADA/Section 504 in the US, the Equality
+#                Act in the UK, and near-universal accreditation policy), which is
+#                why it is kept at high severity. The rule is a compliance check,
+#                not a pedagogical claim.
+#   [ai-resist]  Alkouk & Khlaif (2024), "AI-resistant assessments in higher
+#                education: practical insights from faculty training workshops",
+#                Frontiers in Education 9,
+#                https://doi.org/10.3389/feduc.2024.1499495. A conceptual/
+#                practitioner piece from faculty workshops (NOT a controlled
+#                study). Supports the qualitative claim that higher-order,
+#                reflective, context-specific and process-visible work is harder
+#                to delegate. It recommends NO quantitative threshold, see the
+#                threshold note on a1.
+#   [redesign]   Khlaif, Alkouk, Salama & Abu Eideh (2025), "Redesigning
+#                Assessments for AI-Enhanced Learning: A Framework for Educators
+#                in the Generative AI Era", Education Sciences 15(2):174,
+#                https://doi.org/10.3390/educsci15020174. Qualitative study,
+#                n=61 faculty (interviews + focus groups), reporting motivations
+#                and worked examples for assessment redesign, evidence that
+#                explicit, operational AI expectations are what faculty converge
+#                on, not an experimental result.
+#   [aias]       Perkins, Furze, Roe & MacVaugh (2024), "The AI Assessment Scale
+#                (AIAS): a framework for ethical integration of generative AI in
+#                educational assessment", J. University Teaching & Learning
+#                Practice, https://doi.org/10.53761/q3azde36 (preprint
+#                arXiv:2312.07086); pilot: Furze et al. (2024),
+#                arXiv:2403.14692; revised scale: arXiv:2412.09029. Five levels
+#                from "No AI" to "AI Exploration", set PER ASSESSMENT rather than
+#                per course. The pilot at British University Vietnam reported
+#                fewer GenAI misconduct cases, +5.9% attainment and +33.3% module
+#                pass rate, a pre/post institutional pilot, NOT a controlled
+#                trial, so it is cited as supporting evidence, not proof.
+#                The revised paper also argues detection tools should at most
+#                open a conversation with students, never decide misconduct, and
+#                warns that blanket technology bans create barriers for students
+#                who rely on assistive technology, which is why a2 asks for a
+#                scoped policy rather than a prohibition.
+#   [benchmarks] Baseline for what course materials actually look like, used to
+#                set a1's threshold against real practice rather than intuition:
+#                analyses of university science examinations find ~81% of items
+#                at the three lower Bloom levels and only ~19% higher-order,
+#                while medical-education programmes set explicit floors of 40-50%
+#                higher-order items (e.g. Baylor College of Medicine assessment
+#                guidelines). A 50% floor is therefore demanding relative to
+#                observed practice yet matches an existing institutional standard.
+#   [ai-limits]  Empirical counter-evidence, cited so the AI rules are not built
+#                on a myth: current models do NOT degrade sharply on higher-order
+#                items. Sallam et al. / JMIR (2024), "Assessing ChatGPT's mastery
+#                of Bloom's taxonomy", https://doi.org/10.2196/52113, found
+#                Bloom level did not significantly affect GPT-4 accuracy; JMIR
+#                Dermatology (2025) reports 83.2% (basic) vs 74.1% (applied), #                a real but modest gap. Consequence: "ask a harder question" is
+#                not a defence on its own, and rules whose only theory of change
+#                is question difficulty are marked as weak-mechanism below.
+#   [wicked]     Corbin, Bearman, Boud & Dawson (2025/26), "The wicked problem of
+#                AI and assessment", Assessment & Evaluation in Higher Education
+#                51(4):736-752, https://doi.org/10.1080/02602938.2025.2553340.
+#                Interview study of teachers. Directly relevant warning: task-level
+#                AI-proofing is a moving target, "Every time I think I've adjusted
+#                the assessments to make them AI-resistant, AI improves" (T15), #                and over-hardening trades away what is worth assessing: "if we
+#                make them too rigid, we just test compliance rather than
+#                creativity" (T3). This is why the AI defaults here are weighted
+#                toward process evidence and explicit policy (a2, a4, r2) rather
+#                than toward making questions harder.
+#   [evaljudge]  Bearman, Tai, Dawson, Boud & Ajjawi (2024), "Developing
+#                evaluative judgement for a time of generative artificial
+#                intelligence", Assessment & Evaluation in Higher Education,
+#                https://doi.org/10.1080/02602938.2024.2335321. Argues students
+#                must develop the capability to judge the quality of GenAI
+#                outputs and processes. This is the scholarly backing for the
+#                AI-evaluation and AI-critique rules that until now rested on
+#                focus-group evidence alone (sy3, s1, s4).
+#   [retrieval]  Roediger & Karpicke (2006), "Test-enhanced learning: taking
+#                memory tests improves long-term retention", Psychological Science
+#                17(3):249-255, https://doi.org/10.1111/j.1467-9280.2006.01693.x
+#                (verified: PMID 16507066); Agarwal, Nunes & Blunt (2021),
+#                "Retrieval practice consistently benefits student learning: a
+#                systematic review of applied research in schools and classrooms",
+#                Ed. Psych. Review 33:1409-1453,
+#                https://doi.org/10.1007/s10648-021-09595-9, a SYSTEMATIC REVIEW
+#                (49 effect sizes, total n=5,374; 57% medium or large benefits),
+#                not a meta-analysis. The best-evidenced claim in this file.
+#   [signaling]  Mayer (2009/2021), Multimedia Learning, signaling principle;
+#                Schneider, Beege, Nebel & Rey (2018), "A meta-analysis of how
+#                signaling affects learning with media", Educational Research
+#                Review 23:1-24, https://doi.org/10.1016/j.edurev.2017.11.001,
+#                and Richter/Alpizar-type meta-analyses reporting a small-to-
+#                medium benefit (g ≈ 0.38); Ausubel (1960) advance organizers.
+#                Honest strength: real but modest effect, which is why s2 is
+#                medium severity and satisfied by a single page.
+#
+# Fields:
+#   document_type  one or more of syllabus|slide|assessment|rubric, comma-
+#                  separated (e.g. "assessment,rubric"). List every type to make
+#                  a rule apply to all documents; there is no "all" shorthand.
+#   code           the rule's stable identity: a short id (sy1, s3, a2, r1,
+#                  sya1, all1 …) unique in this file and IDENTICAL in every
+#                  course. Prefix = document type(s) (sy/s/a/r joined in the
+#                  canonical order, "all" when every type is listed), number =
+#                  position within that prefix. Shown next to the rule in the
+#                  UI and in report issues/suggestions, and frozen into report
+#                  snapshots so past runs stay comparable. NEVER renumber an
+#                  existing rule: append new ones with the next free number
+#                  (custom rules per course continue the same sequence).
+#   severity       low | medium | high
+#   category       outcomes | assessment | ai_readiness | content | clarity
+#   text           the requirement, in plain language
+#   rationale      one plain sentence on WHY the rule matters (shown to the
+#                  professor and used by the report to explain a fix)
+#   cel            the boolean condition; true = rule satisfied
+#   contract       extraction-contract fields the cel reads; each:
+#                    name         snake_case member under `doc`
+#                    scope        which document type it is extracted from
+#                    type         boolean | number | string | string_list
+#                    agg          how per-page values collapse (optional;
+#                                 default per type: bool=any, number=sum,
+#                                 string=first, string_list=union)
+#                    instruction  one self-contained sentence for the extractor
+#
+# Applicability guard: a page may be a lecture slide that also carries a small
+# graded task. Assessment/AI-readiness rules must judge the task when one is
+# present but stay silent (pass vacuously) on pages with no graded work, so they
+# never tell a professor their lecture slides "have no AI policy". Every such rule
+# is guarded by `!doc.has_assessment_task || <condition>`, and `has_assessment_task`
+# is a shared field (same name/instruction everywhere, extracted once).
+
+# ----- SYLLABUS -----
+
+- document_type: syllabus
+  code: sy1
+  severity: high
+  category: outcomes
+  # [source: bloom; covers PT-10] Constructive alignment. Biggs is explicit that
+  # "understand"/"know"/"appreciate" are not observable and so cannot be
+  # assessed; the revised taxonomy supplies the level ordering. Tightened to
+  # require a HIGHER-ORDER performance (analyse/evaluate/create), not merely any
+  # observable verb, because the MTG proposal's whole premise is re-articulating
+  # objectives toward higher-order thinking, and "list" or "define" is
+  # observable yet exactly the kind of outcome GenAI makes cheap. Note this is
+  # justified pedagogically ([bloom]), not as an anti-AI measure ([ai-limits]).
+  text: >-
+    At least one learning objective must ask students to analyse, evaluate or
+    create something, not merely to 'know' or 'understand' it, and not only to
+    recall, list or define it.
+  rationale: >-
+    Objectives phrased as an observable higher-order performance tell students
+    what they must be able to do and give you something concrete to assess;
+    'understand' cannot be marked, and recall-level goals are the ones GenAI has
+    made least meaningful to assess on their own.
+  cel: doc.has_performance_objective
+  contract:
+    - name: has_performance_objective
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page states a learning objective phrased as a concrete,
+        observable performance at a HIGHER-ORDER level, analysing, evaluating,
+        or creating (e.g. design, build, critique, compare, justify, produce,
+        investigate). False if the page's objectives only ask students to
+        'know', 'understand', 'be aware of', 'be familiar with' or 'appreciate'
+        something, and false if they only ask students to recall, list, define,
+        describe or identify, those are observable but remain lower-order.
+        Judge the verb actually used, not the topic's difficulty.
+
+- document_type: syllabus
+  code: sy2
+  severity: medium
+  category: assessment
+  # [source: transparent] Named grading components with explicit weights let
+  # students see how the final grade is built.
+  text: >-
+    The syllabus must list its grading components by name, each with an
+    explicitly stated weight.
+  rationale: >-
+    Named components with explicit weights let students see how the final grade
+    is built and reduce disputes about how work was counted.
+  cel: size(doc.grading_components) > 0 && doc.grading_components_have_weights
+  contract:
+    - name: grading_components
+      type: string_list
+      instruction: >-
+        List the named grading components on this page (e.g. midterm, final
+        project, participation).
+    - name: grading_components_have_weights
+      type: boolean
+      agg: all
+      instruction: >-
+        True if every grading component on this page carries an explicit weight
+        or percentage of the final grade.
+
+- document_type: syllabus
+  code: sy3
+  severity: medium
+  category: ai_readiness
+  # [source: focus group + evaljudge; covers PT-02] AI literacy must include evaluating
+  # output quality, not just prompting. Now doubly grounded: [evaljudge] argues
+  # exactly this, students must develop evaluative judgement OF GenAI outputs,   # so the rule is not resting on our focus groups alone.
+  # Verbatim faculty evidence: "AI literacy must include
+  # evaluation of output quality (accuracy, assumptions, logic, citations), not
+  # just prompting." A course that names AI only as a tool to use, without
+  # teaching students to judge what it produces, leaves them deferring to it.
+  text: >-
+    If the syllabus addresses using AI, it should also teach students to judge
+    the quality of AI output (its accuracy, assumptions, or sources), not only
+    how to prompt it.
+  rationale: >-
+    Students who can prompt an AI but cannot evaluate its answers defer to it as
+    an authority; teaching them to check accuracy, assumptions and sources is
+    what turns AI use into real learning.
+  # Vacuously satisfied when the syllabus never mentions AI at all (a different
+  # concern); when it does, it must also cover evaluating the output.
+  cel: "!doc.mentions_ai_use || doc.teaches_ai_output_evaluation"
+  contract:
+    - name: mentions_ai_use
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page mentions students using AI or generative-AI tools in
+        the course in any way (using, allowing, or training them on such tools);
+        false if the page does not refer to student AI use.
+    - name: teaches_ai_output_evaluation
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page says students will learn to evaluate or verify the
+        quality of AI output, such as checking its accuracy, assumptions,
+        reasoning, or sources; false if AI is mentioned only as a tool to use or
+        to prompt, with no mention of judging what it produces.
+
+- document_type: syllabus
+  code: sy4
+  severity: high
+  category: content
+  # [source: udl] Accessibility stated up front. Justified as a legal/institutional
+  # compliance requirement (ADA/Section 504, Equality Act, accreditation policy),
+  # NOT on UDL's contested efficacy evidence, see the [udl] limitation note.
+  text: >-
+    The syllabus must include a disability-accommodation or accessibility
+    policy.
+  rationale: >-
+    Stating accommodations up front tells students with documented needs how to
+    get support and is required by most institutions.
+  cel: doc.has_disability_policy
+  contract:
+    - name: has_disability_policy
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page states a policy on disability accommodations,
+        accessibility, or support for students with documented needs.
+
+
+
+- document_type: syllabus
+  code: sy5
+  severity: medium
+  category: ai_readiness
+  # [source: focus group; covers PT-09] Required AI use must not make access to
+  # a paid product or tier a hidden condition for completing the course.
+  text: >-
+    If students are required to use a specific AI tool, the syllabus should
+    provide institutionally supported access, a free option, or an equivalent
+    alternative.
+  rationale: >-
+    A required tool should not make a student's ability to pay determine whether
+    they can complete the same learning activity or assessment as their peers.
+  cel: "!doc.requires_specific_ai_tool || doc.provides_equitable_ai_access"
+  contract:
+    - name: requires_specific_ai_tool
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page requires students to use a named AI tool or paid AI
+        capability for a course activity or assessment; false if AI use is
+        optional, merely discussed, or no specific tool is required.
+    - name: provides_equitable_ai_access
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page states that required AI access is institutionally
+        provided, available without payment, or replaceable by an equivalent
+        no-cost alternative; false if no such access or alternative is stated.
+
+- document_type: syllabus
+  code: sy6
+  severity: medium
+  category: ai_readiness
+  # [source: focus group; covers PT-09] AI literacy includes recognising bias
+  # and stereotype reproduction, not only learning how to operate a tool.
+  text: >-
+    If the syllabus includes student use of AI, it should also address bias or
+    stereotype reproduction in AI output.
+  rationale: >-
+    Students need to recognise how AI output can reproduce biased assumptions
+    before they can use it responsibly in disciplinary work.
+  cel: "!doc.mentions_ai_use || doc.teaches_ai_bias_awareness"
+  contract:
+    - name: mentions_ai_use
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page mentions students using AI or generative-AI tools in
+        the course in any way (using, allowing, or training them on such tools);
+        false if the page does not refer to student AI use.
+    - name: teaches_ai_bias_awareness
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page says students will examine, recognise, or mitigate bias,
+        unfair assumptions, or stereotype reproduction in AI output; false if AI
+        is discussed without any attention to bias.
+
+# ----- SLIDES -----
+
+- document_type: slide
+  code: s1
+  severity: medium
+  category: ai_readiness
+  # [source: focus group + evaljudge; covers PT-02] teach that AI outputs can be wrong and have
+  # students practise error-detection. Verbatim faculty evidence: "ChatGPT make
+  # up answer with the wrong assumptions. Then I capture actually those wrong
+  # answers from ChatGPT and I use it to my class... my student need to find all
+  # the mistakes that ChatGPT made." This is a property of the teaching material,
+  # so it is not guarded by has_assessment_task: a deck that uses AI in class
+  # should make its fallibility explicit at least once across the deck.
+  text: >-
+    Where the slides involve AI, they should make clear that AI output can be
+    wrong and have students check or correct it, not take it at face value.
+  rationale: >-
+    Students who treat AI answers as automatically correct stop thinking;
+    showing that AI can be wrong, and asking them to catch the mistakes, builds
+    the verification habit AI-resilient learning depends on.
+  # Vacuously satisfied on decks that never bring AI into the material; when AI
+  # is present, the deck must somewhere treat its output as fallible.
+  cel: "!doc.uses_ai_in_teaching || doc.treats_ai_output_as_fallible"
+  contract:
+    - name: uses_ai_in_teaching
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page brings AI or generative-AI output into the teaching,
+        for example showing an AI answer, asking students to use an AI tool, or
+        discussing AI-produced content; false if the page does not involve AI.
+    - name: treats_ai_output_as_fallible
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page makes clear that AI output can be wrong or asks
+        students to verify, critique, or correct it (for example finding the
+        mistakes in an AI answer); false if AI output is presented as correct or
+        is used without any prompt to check it.
+
+- document_type: slide
+  code: s2
+  severity: medium
+  category: outcomes
+  # [source: signaling] Advance organizer: a deck that shows what it is teaching
+  # (its objective or key question) orients students before the content arrives.
+  # A property of the deck as a whole, so it passes if the objective appears on
+  # any page (typically an opening or agenda slide), not on every page.
+  text: >-
+    The slides should state, at least once, the lesson's objective or the key
+    question it sets out to answer.
+  rationale: >-
+    Telling students up front what a lecture is for, and what they should be
+    able to do after it, orients their attention and helps them connect the
+    material to a concrete goal.
+  cel: doc.states_lesson_objective
+  contract:
+    - name: states_lesson_objective
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page states what the lesson is teaching or aims to achieve,         a learning objective, goal, agenda of what students will be able to do,
+        or a guiding question the lesson answers; false for a page that is only
+        title, content, or a reference with no statement of purpose.
+
+- document_type: slide
+  code: s3
+  severity: medium
+  category: ai_readiness
+  # [source: retrieval] The testing effect: slides that ask students to answer
+  # from memory (a question, prompt, or in-class exercise), not only to read,
+  # build durable recall the student owns rather than defers to a tool. A deck
+  # property, satisfied if at least one retrieval prompt appears anywhere.
+  text: >-
+    The slides should include at least one question or prompt that asks students
+    to recall or apply the material themselves, not only present content to read.
+  rationale: >-
+    Answering from memory, rather than only reading, is what makes knowledge
+    stick and stay the student's own; a deck that never asks students to retrieve
+    or apply anything trains them to look answers up instead of learning them.
+  cel: doc.has_retrieval_prompt
+  contract:
+    - name: has_retrieval_prompt
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page asks students to actively recall, answer, apply, or
+        work something out themselves, a question posed to the class, a "try
+        this" exercise, a problem to solve, or a check-your-understanding prompt;
+        false for a page that only presents content to be read or watched.
+
+
+
+- document_type: slide
+  code: s4
+  severity: medium
+  category: ai_readiness
+  # [source: focus group + evaljudge; covers PT-03] AI should become an object of critique,
+  # comparison, or dialogue rather than function only as an answer provider.
+  # [evaljudge] frames this as developing evaluative judgement of GenAI outputs
+  # AND processes, comparing and challenging outputs is the described mechanism.
+  text: >-
+    Where the slides involve AI, they should include an activity that asks
+    students to compare, critique, or challenge AI output.
+  rationale: >-
+    Treating AI as a claim to interrogate rather than an authority keeps
+    disciplinary judgment and active reasoning with the student.
+  cel: "!doc.uses_ai_in_teaching || doc.has_critical_ai_activity"
+  contract:
+    - name: uses_ai_in_teaching
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page brings AI or generative-AI output into the teaching,
+        for example showing an AI answer, asking students to use an AI tool, or
+        discussing AI-produced content; false if the page does not involve AI.
+    - name: has_critical_ai_activity
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page asks students to compare multiple AI outputs, critique
+        or challenge an AI response, defend a different answer, or use AI in a
+        structured dialogue; false if AI content is only shown or consumed.
+
+# ----- ASSESSMENT -----
+# All assessment rules are guarded by `!doc.has_assessment_task || …` so they
+# judge a document only where a real graded task exists (a slide that just
+# explains is never told it "has no AI policy").
+
+- document_type: assessment
+  code: a1
+  # medium, not high: see the MECHANISM CAVEAT below, this is a coverage signal
+  # whose stated mechanism is only partly supported by current model benchmarks.
+  severity: medium
+  category: ai_readiness
+  # [source: ai-resist, redesign, bloom, benchmarks; tempered by ai-limits, wicked;
+  # covers PT-01] This rule implements the MTG proposal's explicit engine
+  # requirement to "guarantee a minimum proportion of higher-order cognitive
+  # tasks", so the threshold stays, but it is now set to a defensible value.
+  #
+  # THRESHOLD PROVENANCE: neither [ai-resist] nor [redesign] gives a percentage.
+  # 50% is chosen against two anchors that DO exist: [benchmarks] finds ~81% of
+  # university science exam items sit at the three LOWER Bloom levels (only 19%
+  # higher-order), and medical-education programmes set explicit floors of 40-50%
+  # higher-order items. A 50% floor therefore means "at least half", is above
+  # documented practice without being utopian, and matches an existing
+  # institutional standard rather than being invented here. The previous 60% was
+  # a round number with no anchor; it also made the rule fire on assessments that
+  # were already well above typical practice, which is the kind of noise
+  # [wicked] warns produces policy fatigue ("if we make them too rigid, we just
+  # test compliance rather than creativity", T3).
+  #
+  # MECHANISM CAVEAT (why this is medium, not high): per [ai-limits],
+  # reasoning-vs-recall is a weak defence ON ITS OWN, GPT-4-class models lose
+  # only ~9 points from basic to applied items, and Bloom level did not
+  # significantly predict accuracy. Higher-order design remains right for
+  # pedagogical reasons ([bloom]), but the load-bearing AI defences here are
+  # process evidence (a4), explicit policy (a2) and process-crediting rubrics
+  # (r2), which is why those are high and this is a coverage signal.
+  text: >-
+    At least half of the assessment questions (50%) should demand reasoning,
+    analysis or application rather than recall a model can answer verbatim.
+  rationale: >-
+    One token reasoning question is not enough: if most of the assessment is
+    recall, the score largely measures what a tool can retrieve. Note that
+    higher-order phrasing alone does not stop AI use, pair this with process
+    evidence and an explicit AI policy.
+  cel: >-
+    !doc.has_assessment_task || (doc.question_count > 0 &&
+    doc.reasoning_question_count * 100 / doc.question_count >= 50)
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: question_count
+      type: number
+      agg: sum
+      instruction: >-
+        The number of distinct assessment questions, prompts, or tasks on THIS
+        page (0 if none).
+    - name: reasoning_question_count
+      type: number
+      agg: sum
+      instruction: >-
+        Of the questions on THIS page, how many require analysis, justification,
+        an original example, or course-specific context that a generic AI answer
+        could NOT satisfy. Count only genuine reasoning items, never pure recall
+        or definition; 0 if none.
+
+- document_type: assessment
+  code: a2
+  severity: high
+  category: ai_readiness
+  # [source: redesign, aias, wicked; covers PT-08] Clarify AI expectations explicitly,
+  # not vaguely. The strongest default in this file: unlike question-difficulty
+  # rules it does not depend on model capability, so [ai-limits] does not weaken
+  # it, an explicit policy stays meaningful as models improve. [aias] is the
+  # closest thing to an empirical result anyone has here: adopting an explicit,
+  # level-based AI policy was followed by fewer GenAI misconduct cases, +5.9%
+  # attainment and +33.3% module pass rate at BUV (pre/post pilot, not a
+  # controlled trial, do not overstate it).
+  # The "which parts of the task" clause is deliberate: [aias] scales AI use per
+  # assessment component, and a policy that is explicit but course-wide still
+  # leaves students guessing on the specific deliverable.
+  text: >-
+    The assessment must state an explicit, specific policy on what AI use is
+    permitted, limited, or prohibited, and for which parts of the task, not a
+    vague mention or a blanket statement.
+  rationale: >-
+    A vague nod to AI leaves students guessing and is hard to enforce; a specific
+    policy that says which tools and which parts of the task are covered is
+    fairer, more defensible in an integrity case, and has been associated with
+    fewer misconduct cases where it has been adopted.
+  cel: "!doc.has_assessment_task || doc.ai_policy_level >= 2"
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: ai_policy_level
+      type: number
+      agg: max
+      instruction: >-
+        Rate how clearly THIS page states an AI-use policy for the work: 0 if AI
+        use is not addressed at all; 1 if AI is mentioned only vaguely (e.g.
+        "don't misuse AI") without saying what is allowed; 2 ONLY if it states
+        explicitly and specifically what AI use is permitted, limited, or
+        prohibited and for which parts of the task.
+
+- document_type: assessment
+  code: a3
+  severity: medium
+  category: ai_readiness
+  # [source: focus group; covers PT-06] tasks where students must justify decisions, e.g.
+  # under incomplete information (scenario / iterative). Verbatim faculty
+  # evidence: "gamified scenarios... they're going to have to make some
+  # decisions... they do not have all the information before they have to do a
+  # decision." A choice the student must justify in their own words is far harder
+  # to hand to an AI than a question with one retrievable answer.
+  text: >-
+    At least one task should make students justify a decision or choice in their
+    own reasoning, not just produce a single correct answer.
+  rationale: >-
+    Asking students to defend a decision, especially with incomplete
+    information, surfaces their own reasoning and is much harder to delegate to
+    an AI than a question with one lookup-able answer.
+  cel: "!doc.has_assessment_task || doc.requires_justified_decision"
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: requires_justified_decision
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page asks the student to make and justify a decision,
+        choice, or recommendation in their own reasoning, for example a
+        scenario, case, or open problem where they must defend a course of
+        action; false if every task has a single correct answer with nothing to
+        justify.
+
+- document_type: assessment
+  code: a4
+  severity: high
+  category: ai_readiness
+  # [source: focus group; covers PT-05] take-home essays are a high-risk format and must
+  # carry extra process evidence (planning tables, annotations, oral checks).
+  # Verbatim faculty evidence: take-home essays were called high-risk and "I
+  # broke down the final essay into smaller parts... they write certain parts in
+  # class." This rule fires ONLY when the assessment actually is a take-home
+  # written piece, so ordinary in-class or interactive assessments are never
+  # penalised for not being essays.
+  text: >-
+    If the assessment is a take-home essay or written report, it should require
+    process evidence such as a plan, annotated drafts, or an oral check.
+  rationale: >-
+    A take-home essay is the easiest format to generate with AI; requiring a
+    plan, annotated drafts, or a short oral check makes the student's own work
+    visible and keeps the grade meaningful.
+  # Two guards: only judged where there is a graded task AND it is a take-home
+  # written piece; otherwise it passes without comment.
+  cel: >-
+    !doc.has_assessment_task || !doc.is_take_home_essay ||
+    doc.requires_process_evidence
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: is_take_home_essay
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets a take-home written assignment a student prepares
+        on their own time, an essay, paper, report, or written reflection
+        submitted as a finished document; false for in-class work, exams,
+        presentations, oral tasks, or non-written deliverables.
+    - name: requires_process_evidence
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page requires evidence of how the writing was produced, a
+        planning table or outline, annotated or staged drafts, a process log, or
+        an oral check or defence of the work; false if only the finished text is
+        submitted.
+
+
+
+- document_type: assessment
+  code: a5
+  severity: medium
+  category: content
+  # [source: focus group; covers PT-04] AI-resilient redesign should remain
+  # meaningful and motivating, not merely make misconduct more difficult.
+  text: >-
+    Each assessment should connect the required work to a meaningful
+    disciplinary problem, audience, scenario, or application.
+  rationale: >-
+    A concrete purpose gives students a reason to engage with the task beyond
+    compliance and makes authentic disciplinary judgment visible.
+  cel: "!doc.has_assessment_task || doc.has_meaningful_task_context"
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: has_meaningful_task_context
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page connects the assessed work to a concrete disciplinary
+        problem, realistic scenario, intended audience, professional practice,
+        or stated application beyond earning marks; false if it only requests a
+        decontextualized answer or product.
+
+- document_type: assessment
+  code: a6
+  severity: high
+  category: assessment
+  # [source: focus group; covers PT-07] Assessment items generated or supported
+  # by AI still require faculty quality control for ambiguity and correctness.
+  text: >-
+    Assessment instructions and questions must not contain a clear ambiguity,
+    contradiction, missing condition, or multiple unintended correct answers.
+  rationale: >-
+    An ambiguous or internally inconsistent item cannot measure the intended
+    competence fairly, regardless of whether AI assisted its creation.
+  cel: "!doc.has_assessment_task || !doc.has_invalid_assessment_item"
+  contract:
+    - name: has_assessment_task
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page sets work that is graded or handed in (a homework,
+        assignment, problem to solve, exercise, or task with a deliverable);
+        false for purely explanatory or illustrative content.
+    - name: has_invalid_assessment_item
+      type: boolean
+      agg: any
+      instruction: >-
+        True only if THIS page contains a clearly ambiguous or contradictory
+        instruction, omits information required to answer a question, has no
+        valid answer, or has multiple correct options where only one is intended;
+        false when no such concrete defect is present.
+
+- document_type: syllabus,assessment
+  code: sya1
+  severity: high
+  category: ai_readiness
+  # [source: focus group; covers PT-09] Work involving confidential external
+  # data needs an explicit safeguard before students use AI services.
+  text: >-
+    If course work involves confidential or sensitive external data, the
+    material must state that such data must not be submitted to unapproved AI
+    services.
+  rationale: >-
+    Explicit handling guidance prevents internship, client, patient, or research
+    data from leaving the environment in which it may lawfully be used.
+  cel: >-
+    !doc.involves_sensitive_external_data ||
+    doc.states_ai_confidentiality_safeguard
+  contract:
+    - name: involves_sensitive_external_data
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page requires or discusses work with confidential,
+        proprietary, personal, patient, client, employer, internship, or
+        non-public research data; false if no sensitive external data is involved.
+    - name: states_ai_confidentiality_safeguard
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page explicitly prohibits submitting sensitive data to
+        unapproved AI services or directs students to an approved protected
+        environment; false if no AI-related confidentiality safeguard is stated.
+
+- document_type: syllabus,assessment
+  code: sya2
+  severity: medium
+  category: ai_readiness
+  # [source: focus group; covers PT-09] Required production with GenAI should be
+  # accompanied by operational copyright and attribution guidance.
+  text: >-
+    If students are asked to submit AI-generated content, the material should
+    state how copyright, attribution, or intellectual-property constraints must
+    be handled.
+  rationale: >-
+    Operational guidance helps students avoid presenting generated text, code,
+    media, or branding in ways that infringe rights or obscure authorship.
+  cel: "!doc.requires_ai_generated_content || doc.states_ai_ip_guidance"
+  contract:
+    - name: requires_ai_generated_content
+      gate: true
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page asks or requires students to generate and submit text,
+        code, images, audio, video, branding, or another product using AI; false
+        if AI-generated content is not part of the required submission.
+    - name: states_ai_ip_guidance
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page gives explicit guidance on copyright, licensing,
+        attribution, ownership, trademark, or intellectual-property constraints
+        for AI-generated content; false if no such guidance is stated.
+
+# ----- RUBRIC -----
+
+- document_type: rubric
+  code: r1
+  severity: medium
+  category: assessment
+  # [source: transparent] Analytic rubric: criteria with described performance
+  # levels make grading consistent and show students how levels differ.
+  text: >-
+    The rubric must define explicit grading criteria with performance levels.
+  rationale: >-
+    Criteria with described performance levels make grading consistent and show
+    students exactly how each level differs.
+  cel: size(doc.criteria) > 0 && doc.criteria_have_levels
+  contract:
+    - name: criteria
+      type: string_list
+      instruction: List the grading criteria named on this page.
+    - name: criteria_have_levels
+      type: boolean
+      agg: all
+      instruction: >-
+        True if every criterion on this page describes the performance levels or
+        score ranges used to grade it.
+
+- document_type: rubric
+  code: r2
+  severity: high
+  category: ai_readiness
+  # [source: ai-resist, redesign, wicked, evaljudge; covers PT-01] A rubric that scores
+  # only whether the final answer is correct can be maxed out by an AI; one that
+  # also credits the student's reasoning, process, or original contribution
+  # rewards what the tool cannot supply, so the grade still measures the student.
+  # Kept at HIGH severity on purpose: unlike a1, this defence does not decay as
+  # models improve, because it shifts what is graded from the product (which AI
+  # can supply) to the process (which it cannot evidence on the student's
+  # behalf). [ai-resist] identifies process-visible and reflective work as the
+  # AI-resistant category, and the MTG proposal calls for "process-oriented"
+  # assessment directly.
+  text: >-
+    The rubric should award credit for the student's own reasoning, process, or
+    original contribution, not only for the correctness of the final answer.
+  rationale: >-
+    A rubric that grades only the final product can be satisfied by AI-generated
+    work; crediting reasoning, process, or originality is what keeps the score
+    measuring the student rather than the tool.
+  cel: doc.credits_reasoning_or_process
+  contract:
+    - name: credits_reasoning_or_process
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page has at least one criterion that grades the student's
+        own reasoning, method, process, or originality, for example the quality
+        of the argument, the approach taken, evidence of drafting, or an original
+        contribution; false if every criterion scores only whether the final
+        answer or product is correct or complete.
+
+- document_type: rubric
+  code: r3
+  severity: medium
+  category: outcomes
+  # [source: bloom; covers PT-10] Constructive alignment (Biggs): a rubric grades well only when
+  # its criteria map to the learning outcomes the work is meant to demonstrate,
+  # so students are assessed on the intended performances and not on incidentals.
+  text: >-
+    The rubric's criteria should map to the learning outcomes or skills the task
+    is meant to assess, not grade unrelated or purely surface features.
+  rationale: >-
+    When a rubric's criteria trace back to the outcomes the task is meant to
+    demonstrate, students are graded on the intended learning rather than on
+    surface features, and the assessment stays aligned with the course goals.
+  cel: doc.criteria_map_to_outcomes
+  contract:
+    - name: criteria_map_to_outcomes
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page's grading criteria are tied to the learning outcomes,
+        objectives, or skills the task assesses, naming or clearly reflecting
+        what students were meant to learn or demonstrate; false if the criteria
+        grade only unrelated or surface features (length, formatting, neatness)
+        with no link to the intended learning.
+
+# ----- ALL DOCUMENTS (every type listed explicitly) -----
+
+- document_type: syllabus,slide,assessment,rubric
+  code: all1
+  severity: low
+  category: clarity
+  # [source: professional-quality convention; NOT claimed to be research-backed]
+  # Correct, professional materials keep student focus on the content and
+  # preserve the credibility of the course. Deliberately the only default with no
+  # empirical citation: no study here establishes a learning effect from typos,
+  # so it is kept at LOW severity and must never be reported as evidence-based.
+  text: Every document must be free of spelling and grammar mistakes.
+  rationale: >-
+    Spelling and grammar mistakes distract students and undercut the
+    credibility of the material.
+  cel: "!doc.has_language_error"
+  contract:
+    - name: has_language_error
+      type: boolean
+      agg: any
+      instruction: >-
+        True if THIS page has a real spelling or grammar mistake in the
+        author's own prose, one whose corrected form would differ from what is
+        printed; re-read the exact characters before flagging one. Proper
+        nouns, institution names, the repeated logo/header, technical or
+        foreign terms, acronyms, code, URLs, formula symbols, and text inside
+        embedded third-party material are never mistakes; when unsure, treat
+        the text as correct.

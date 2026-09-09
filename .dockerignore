@@ -1,0 +1,18 @@
+# Allowlist the build context as well as the files copied by the Dockerfile.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!uv.lock
+!app/
+!app/**
+!migrations/
+!migrations/**
+!alembic.ini
+!LICENSE
+!LICENSE-docker
+!LICENSE-docs
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*

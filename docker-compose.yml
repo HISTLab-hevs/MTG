@@ -1,0 +1,128 @@
+x-restart: &restart
+  restart: unless-stopped
+
+# One image for web and all workers. setup.sh builds it locally; image installs
+# set MTG_IMAGE in .env and use pull followed by up --no-build.
+x-app: &app
+  <<: *restart
+  image: ${MTG_IMAGE:-mtg:local}
+  build: .
+
+services:
+  db:
+    <<: *restart
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: mtg
+      POSTGRES_PASSWORD: mtg
+      POSTGRES_DB: mtg
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mtg"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    <<: *restart
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  web:
+    <<: *app
+    command: >
+      sh -c "alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000
+      --proxy-headers --forwarded-allow-ips='*'"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://mtg:mtg@db:5432/mtg
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /data/storage
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Document extraction + embedding (vision model). Its own queue/worker so a
+  # long upload never blocks report analysis or rule compilation.
+  worker-documents:
+    <<: *app
+    command: rq worker documents --url redis://redis:6379/0
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://mtg:mtg@db:5432/mtg
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /data/storage
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Report analysis over already-extracted material, on its own queue. A single
+  # run already extracts several pages of one document in parallel
+  # (EVIDENCE_EXTRACTION_CONCURRENCY)
+  worker-reports:
+    <<: *app
+    command: rq worker reports --url redis://redis:6379/0
+    env_file: .env
+    deploy:
+      replicas: ${REPORT_WORKER_REPLICAS:-1}
+    environment:
+      DATABASE_URL: postgresql+psycopg://mtg:mtg@db:5432/mtg
+      REDIS_URL: redis://redis:6379/0
+      STORAGE_DIR: /data/storage
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Rule generation (text model) on its own queue/worker.
+  worker-rules:
+    <<: *app
+    command: rq worker rules --url redis://redis:6379/0
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://mtg:mtg@db:5432/mtg
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  caddy:
+    <<: *restart
+    image: caddy:2-alpine
+    environment:
+      HTTP_PORT: ${HTTP_PORT:-80}
+      HTTPS_PORT: ${HTTPS_PORT:-443}
+    ports:
+      - "${HTTP_PORT:-80}:${HTTP_PORT:-80}"
+      - "${HTTPS_PORT:-443}:${HTTPS_PORT:-443}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  pgdata:
+  storage:
+  caddy_data:
+  caddy_config:

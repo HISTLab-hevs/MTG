@@ -1,0 +1,38 @@
+{# Stable dom_id for OOB swaps; edits are saved as Markdown. #}
+<div class="editable-suggestion" id="{{ dom_id }}" data-key="{{ dom_id }}"
+     {% if oob %}hx-swap-oob="true"{% endif %}>
+  <div class="report-prose editable-rendered">{{ (value or "*No suggestions yet. Click Edit to add your own.*") | markdown }}</div>
+  <form class="editable-form" method="post" action="{{ action }}" hidden
+        hx-post="{{ action }}" hx-target="#{{ dom_id }}" hx-swap="outerHTML">
+    <input type="hidden" name="solutions_md" value="{{ value or '' }}">
+  </form>
+  <div class="editable-toolbar">
+    <button type="button" class="btn btn-sm js-edit-start editable-edit-btn">
+      {{ icon.pencil() }} Edit
+    </button>
+    {# undone tracks direction; storage only swaps current and previous text. #}
+    {% if undoable %}
+    <button type="button" class="btn btn-sm editable-undo-btn"
+            title="{{ 'Bring back the text you just undid' if undone else 'Restore the text from before the last change' }}"
+            hx-post="{{ undo_action }}" hx-target="#{{ dom_id }}" hx-swap="outerHTML"
+            hx-vals='{"undone": {{ "true" if undone else "false" }}}'>
+      {% if undone %}{{ icon.redo() }} Redo{% else %}{{ icon.undo() }} Undo last change{% endif %}
+    </button>
+    {% endif %}
+    <div class="editable-editing-actions" hidden>
+      <span class="editable-format" role="group" aria-label="Text formatting">
+        <button type="button" class="btn-icon js-format" data-command="bold"
+                title="Bold (Ctrl+B)" aria-label="Bold"><strong>B</strong></button>
+        <button type="button" class="btn-icon js-format" data-command="italic"
+                title="Italic (Ctrl+I)" aria-label="Italic"><em>I</em></button>
+      </span>
+      <button type="button" class="btn btn-primary btn-sm js-edit-save"
+              title="Save (Ctrl+Enter)">Save</button>
+      <button type="button" class="btn btn-sm js-edit-cancel"
+              title="Discard changes (Esc)">Cancel</button>
+      <span class="editable-shortcut-hint text-muted" aria-hidden="true">
+        Ctrl+Enter to save · Esc to discard
+      </span>
+    </div>
+  </div>
+</div>

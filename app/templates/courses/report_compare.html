@@ -1,0 +1,251 @@
+{% extends "courses/course_base.html" %}
+{% block title %}Compare reports · {{ course.title }}{% endblock %}
+
+{% macro sev_badge(sev) %}<span class="badge badge-sev badge-sev-{{ sev }}" title="{{ sev | capitalize }} severity">{{ sev_letter(sev) }}<span class="sr-only">{{ sev | capitalize }} severity</span></span>{% endmacro %}
+{% macro code_badge(code) %}{% if code %}<span class="badge badge-code">{{ code }}</span> {% endif %}{% endmacro %}
+
+{% macro finding_row(c) %}
+<li class="diff-finding">
+  <span class="diff-finding-sev">{{ sev_badge(c.severity) }}</span>
+  <span class="diff-finding-code">{{ code_badge(c.code) }}</span>
+  <span class="diff-finding-text"><strong>{{ c.filename }}</strong>: {{ c.rule }}</span>
+</li>
+{% endmacro %}
+
+{% block content %}
+<a class="back-link" href="/courses/{{ course.id }}/report">
+  {{ icon.arrow_left() }} Analysis
+</a>
+<div class="page-header compare-header">
+  <div>
+    <h1>Compare reports</h1>
+    <p class="text-muted">
+      Everything below reads in this direction: what changed going
+      <strong>from</strong> the first run <strong>to</strong> the second.
+    </p>
+  </div>
+</div>
+
+{% set flip_url = "/courses/" ~ course.id ~ "/report/compare?ids=" ~ compare_ids[0] ~ "&ids=" ~ compare_ids[1] ~ ("" if reversed_ else "&reverse=1") %}
+<section class="card compare-direction">
+  <ol class="compare-direction-runs">
+    <li class="compare-direction-run">
+      <span class="compare-direction-tag">Before</span>
+      <span class="compare-direction-date">{{ older.created_at.strftime("%d %b %Y, %H:%M") }}</span>
+    </li>
+    <li class="compare-direction-arrow" aria-hidden="true">→</li>
+    <li class="compare-direction-run">
+      <span class="compare-direction-tag">After</span>
+      <span class="compare-direction-date">{{ newer.created_at.strftime("%d %b %Y, %H:%M") }}</span>
+    </li>
+  </ol>
+  <a class="btn btn-sm compare-direction-swap" href="{{ flip_url }}">
+    {{ icon.swap() }} Swap direction
+  </a>
+</section>
+
+{% if reversed_ %}
+<p class="hint hint-info compare-reversed-note">
+  <strong>Reversed comparison.</strong>
+  The later run is being read as the “before”, so “resolved” means a finding the
+  earlier run does not have, not a fix you made. Swap the direction to read it
+  chronologically.
+</p>
+{% endif %}
+
+<section class="card">
+  <h2>What changed</h2>
+  {% macro score_delta(label, before, after, delta, is_new, new_note) %}
+  <div class="diff-score">
+    <span class="diff-score-label">{{ label }}</span>
+    <span class="diff-score-val">
+      {% if before is not none %}{{ before }}{% else %}<span class="diff-score-none">Not assessed</span>{% endif %}
+      →
+      {% if after is not none %}{{ after }}{% else %}<span class="diff-score-none">Not assessed</span>{% endif %}
+      {% if delta is not none and delta != 0 %}
+      <span class="diff-delta {{ 'up' if delta > 0 else 'down' }}">
+        {{ "+" if delta > 0 }}{{ delta }}
+      </span>
+      {% endif %}
+    </span>
+    {% if is_new %}
+    <span class="diff-score-note text-muted">{{ new_note }}</span>
+    {% endif %}
+  </div>
+  {% endmacro %}
+
+  <div class="diff-scores">
+    {{ score_delta("Course health", diff.score_before, diff.score_after,
+                   diff.score_delta, diff.score_is_new,
+                   "First run with a health score.") }}
+    {{ score_delta("AI-readiness", diff.ai_before, diff.ai_after,
+                   diff.ai_delta, diff.ai_is_new,
+                   "Not scored before: this run is the first with an AI-readiness rule.") }}
+  </div>
+
+</section>
+
+{% macro fold_head(title, count, tone) %}
+<summary class="diff-fold-summary">
+  <span class="diff-fold-chevron" aria-hidden="true">></span>
+  <h2 class="diff-h {{ tone }}">{{ title }}</h2>
+  <span class="diff-fold-count">{{ count }}</span>
+</summary>
+{% endmacro %}
+
+<div class="diff-cols">
+  <details class="card diff-card diff-fold" data-key="diff-resolved" open>
+    {{ fold_head("Resolved", diff.resolved | length, "diff-h-good") }}
+    <div class="diff-fold-body">
+      {% if diff.resolved %}
+      <ul class="diff-list">
+        {% for c in diff.resolved %}
+        {{ finding_row(c) }}
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">Nothing was fixed between these two runs.</p>{% endif %}
+    </div>
+  </details>
+
+  <details class="card diff-card diff-fold" data-key="diff-broken" open>
+    {{ fold_head("Newly broken", diff.broken | length, "diff-h-bad") }}
+    <div class="diff-fold-body">
+      {% if diff.broken %}
+      <ul class="diff-list">
+        {% for c in diff.broken %}
+        {{ finding_row(c) }}
+        {% endfor %}
+      </ul>
+      {% else %}<p class="text-muted">Nothing broke between these two runs.</p>{% endif %}
+    </div>
+  </details>
+</div>
+
+{% if diff.still_failing %}
+<details class="card diff-card diff-fold" data-key="diff-still-failing" open>
+  {{ fold_head("Still failing", diff.still_failing | length, "") }}
+  <div class="diff-fold-body">
+    <ul class="diff-list diff-muted">
+      {% for c in diff.still_failing %}
+      {{ finding_row(c) }}
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+{% endif %}
+
+<details class="card diff-card diff-fold" data-key="diff-documents" open>
+  {{ fold_head("Documents", diff.docs | length, "") }}
+  <div class="diff-fold-body">
+    <ul class="diff-list diff-docs">
+      {% for d in diff.docs %}
+      <li class="diff-doc-{{ d.change }}">
+        <span class="diff-doc-mark">
+          {% if d.change == "added" %}+{% elif d.change == "removed" %}−{% elif d.change == "edited" %}≠{% else %}={% endif %}
+        </span>
+        <strong>{{ d.filename }}</strong>
+        <span class="text-muted">{{ doc_type_label(d.document_type) }} · {{ d.change }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+
+{% if diff.rules %}
+{# Changed rule definitions are excluded from transitions. #}
+<details class="card diff-card diff-fold" data-key="diff-rule-changes" open>
+  {{ fold_head("Rule changes", diff.rules | length, "") }}
+  <div class="diff-fold-body">
+    <ul class="diff-list diff-docs">
+      {% for r in diff.rules %}
+      <li class="diff-doc-{{ 'unchanged' if r.change == 'changed' else r.change }}">
+        <span class="diff-doc-mark">
+          {% if r.change == "added" %}+{% elif r.change == "removed" %}−{% else %}≠{% endif %}
+        </span>
+        <span class="badge badge-code">{{ r.code }}</span>
+        {{ r.text }}
+        <span class="text-muted">
+          {% if r.change == "changed" %}
+            different definition in the two runs{% if r.text_before %} (was: “{{ r.text_before }}”){% endif %}, its outcomes are not compared
+          {% else %}
+            {{ "only in the newer run" if r.change == "added" else "only in the older run" }}
+          {% endif %}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+{% endif %}
+
+<section class="card">
+  <h2>Overall</h2>
+  <p class="text-muted compare-section-hint">
+    What each run concluded about the course as a whole.
+  </p>
+  <div class="compare-prose" id="compare-prose">
+    <article class="compare-pane">
+      <div class="compare-pane-head">Before · {{ older.created_at.strftime("%d %b %Y") }}</div>
+      <div class="compare-pane-body">
+        <div class="report-prose">{{ (older.summary_md or "_No summary._") | markdown }}</div>
+      </div>
+    </article>
+    <article class="compare-pane">
+      <div class="compare-pane-head">After · {{ newer.created_at.strftime("%d %b %Y") }}</div>
+      <div class="compare-pane-body">
+        <div class="report-prose">{{ (newer.summary_md or "_No summary._") | markdown }}</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+{% if older.priorities_md or newer.priorities_md %}
+<section class="card">
+  <h2>Fix these first</h2>
+  <p class="text-muted compare-section-hint">
+    What each run put at the top of the list. These boxes keep their own length:
+    a shorter list is a shorter box.
+  </p>
+  <div class="compare-prose compare-prose-free">
+    <article class="compare-pane">
+      <div class="compare-pane-head">Before · {{ older.created_at.strftime("%d %b %Y") }}</div>
+      <div class="report-prose">
+        {% if older.priorities_md %}{{ older.priorities_md | markdown }}
+        {% else %}<p class="text-muted">Nothing was flagged as a priority in this run.</p>{% endif %}
+      </div>
+    </article>
+    <article class="compare-pane">
+      <div class="compare-pane-head">After · {{ newer.created_at.strftime("%d %b %Y") }}</div>
+      <div class="report-prose">
+        {% if newer.priorities_md %}{{ newer.priorities_md | markdown }}
+        {% else %}<p class="text-muted">Nothing was flagged as a priority in this run.</p>{% endif %}
+      </div>
+    </article>
+  </div>
+</section>
+{% endif %}
+
+<script>
+  // Match Overall pane heights; leave priority panes unconstrained.
+  (function () {
+    const root = document.getElementById("compare-prose");
+    if (!root) return;
+    const bodies = [...root.querySelectorAll(".compare-pane-body")];
+    if (bodies.length < 2) return;
+    const fit = () => {
+      // Keep natural heights when panes stack on mobile.
+      if (window.getComputedStyle(root).gridTemplateColumns.split(" ").length < 2) {
+        bodies.forEach((b) => { b.style.maxHeight = ""; });
+        return;
+      }
+      bodies.forEach((b) => { b.style.maxHeight = ""; });
+      const shortest = Math.min(...bodies.map((b) => b.scrollHeight));
+
+      const height = Math.max(shortest, 220);
+      bodies.forEach((b) => { b.style.maxHeight = `${height}px`; });
+    };
+    fit();
+    window.addEventListener("resize", fit);
+  })();
+</script>
+{% endblock %}

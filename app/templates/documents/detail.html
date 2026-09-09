@@ -1,0 +1,41 @@
+{% extends "courses/course_base.html" %}
+{% block title %}{{ document.filename }} · {{ course.title }}{% endblock %}
+
+{% block content %}
+<a class="back-link" href="/courses/{{ course.id }}/materials">
+  {{ icon.arrow_left() }} Material
+</a>
+<div class="page-header">
+  <h1>{{ document.filename }}</h1>
+  <span class="badge badge-muted">{{ doc_type_label(document.document_type) }}</span>
+  <div class="doc-actions">
+    <div class="version-tabs">
+      {% for v in document.versions | reverse %}
+        <a class="version-tab {{ 'active' if v.id == version.id }}"
+           href="/courses/{{ course.id }}/documents/{{ document.id }}?version_id={{ v.id }}">
+          v{{ v.version_number }}
+        </a>
+      {% endfor %}
+    </div>
+    {% set only_version = document.versions | length == 1 %}
+    <form method="post"
+          action="/courses/{{ course.id }}/documents/{{ document.id }}/versions/{{ version.id }}/delete"
+          {% if only_version %}
+          data-confirm="Delete “{{ document.filename }}”? Version {{ version.version_number }} is its only version, so this removes the whole document with its extracted pages. This cannot be undone."
+          data-confirm-label="Delete document"
+          {% else %}
+          data-confirm="Delete version {{ version.version_number }} of “{{ document.filename }}”? Only this upload and its extracted pages are removed; the other {{ document.versions | length - 1 }} version{{ 's' if document.versions | length > 2 }} stay. This cannot be undone."
+          data-confirm-label="Delete version"
+          {% endif %}>
+      <button class="btn btn-danger btn-sm" type="submit">
+        {{ icon.trash() }}
+        {{ "Delete document" if only_version else "Delete version " ~ version.version_number }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="version-panel">
+  {% include "documents/_version_panel.html" %}
+</div>
+{% endblock %}

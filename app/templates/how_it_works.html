@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}How it works{% endblock %}
+{% block topbar_title %}How it works{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav">
+  {% if course %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  <div class="sidebar-section">{{ course.title }}</div>
+  <a class="nav-item" href="/courses/{{ course.id }}/overview">Overview</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/materials">Material</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/rules">Rules</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/report">Analysis</a>
+  {% else %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>How it works</h1>
+  <p class="text-muted">
+    You upload the documents you already teach with. The tool reads them, checks
+    each one against a set of teaching-quality rules, and reports what is missing
+    and how to fix it. Nothing you upload is changed.
+  </p>
+</div>
+
+<ol class="guide-flow">
+  <li class="guide-step card">
+    <div class="guide-step-tab">Material</div>
+    <h2>1. Upload your material</h2>
+    <p>
+      Add your PDFs and tick what each one is: syllabus, slides, assessment, or
+      rubric. A file can be more than one type, for example an exam that includes
+      its own rubric.
+    </p>
+    <p class="guide-why">The type decides which rules are checked on it.</p>
+  </li>
+
+  <li class="guide-step card">
+    <div class="guide-step-tab">Rules</div>
+    <h2>2. Choose your rules</h2>
+    <p>
+      A rule is one thing a document must do. Your course starts with a ready-made
+      set based on good teaching practice. Turn any off, or write your own in
+      plain language and the tool builds the check for you.
+    </p>
+    <p class="guide-why">You decide what "good" means for your course.</p>
+  </li>
+
+  <li class="guide-step card">
+    <div class="guide-step-tab">Analysis</div>
+    <h2>3. Run the analysis</h2>
+    <p>
+      Every rule is checked against every document it applies to and marked pass
+      or fail. The health score is the share of checks that passed, counting a
+      high-severity rule more than a minor one.
+    </p>
+    <p class="guide-why">One number for the course, plus the detail behind it.</p>
+  </li>
+
+  <li class="guide-step card">
+    <div class="guide-step-tab">Report</div>
+    <h2>4. Read the report and improve</h2>
+    <p>
+      Each failed check names the document, the rule, and the passage that caused
+      it, with a concrete fix. Edit the file, upload the new version, and re-run to
+      watch the score rise. The report exports to PDF.
+    </p>
+    <p class="guide-why">The goal is to close the gaps, not just find them.</p>
+  </li>
+</ol>
+
+<div class="guide-cols">
+  <section class="card guide-aside">
+    <h2>Writing a good rule</h2>
+    <p>Write it as a requirement and be specific, so it can be checked.</p>
+    <ul class="guide-rules">
+      <li class="ok">"Each assessment must state which learning outcomes it evaluates."</li>
+      <li class="ok">"At least 60% of exam questions must require reasoning, not recall."</li>
+      <li class="no">"The material should be engaging." (too vague to check)</li>
+    </ul>
+    <p class="text-muted">
+      Nothing is added until you review the draft and click Accept.
+    </p>
+  </section>
+
+  <section class="card guide-aside">
+    <h2>Two assistants</h2>
+    <p>There is a chat on the Analysis page and another on Material. They do different jobs.</p>
+    <ul class="guide-plain">
+      <li>
+        <strong>In the report</strong>, it explains why something was flagged and
+        rewrites the suggestions with you: ask for "make this shorter" or push back
+        on advice you disagree with, and the block updates in place. Type
+        <code>@</code> to aim it at one document.
+      </li>
+      <li>
+        <strong>In your material</strong>, it answers questions about what your
+        documents actually say, quoting the page it took each answer from.
+      </li>
+    </ul>
+    <p class="text-muted">
+      Neither one edits your uploaded files, and the pass/fail findings stay as the
+      analysis produced them, only the written suggestions can be reworded.
+    </p>
+  </section>
+</div>
+
+<section class="card guide-start">
+  <div>
+    <h2>Ready to try it</h2>
+    <p class="text-muted">
+      A syllabus and one set of slides is enough for a first run. You can add the
+      rest later, and re-run as often as you like.
+    </p>
+  </div>
+  {% if course %}
+  <a class="btn btn-primary" href="/courses/{{ course.id }}/materials">Go to Material</a>
+  {% else %}
+  <a class="btn btn-primary" href="/courses">Go to my courses</a>
+  {% endif %}
+</section>
+{% endblock %}

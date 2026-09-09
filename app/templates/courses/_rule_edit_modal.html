@@ -1,0 +1,268 @@
+<dialog class="modal rule-modal" id="rule-edit-dialog"{% if waiting %} data-waiting="true"{% endif %}>
+  <form class="rule-edit-form"
+        hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/edit"
+        hx-target="#rule-modal-root" hx-swap="innerHTML"
+        hx-disabled-elt="find button">
+    <div class="modal-head">
+      <h3>Edit rule {% if rule.code %}<span class="badge badge-code">{{ rule.code }}</span>{% endif %}</h3>
+    </div>
+    {% if carry_contract %}
+    {# Carry the unsaved contract through Save. #}
+    <input type="hidden" name="contract_draft" value="{{ rule.extraction_contract }}">
+    {% endif %}
+    {% if notice %}
+    <p class="modal-note">{{ notice }}</p>
+    {% endif %}
+    {% if waiting %}
+    {# Poll until the draft is ready; 204 leaves the dialog unchanged. #}
+    <p class="modal-note reconcile-wait">
+      <span class="spinner"></span>
+      The assistant is declaring: <code>{{ waiting }}</code>… wait for it to
+      finish (you can review before anything is saved).
+    </p>
+    <div hx-get="/courses/{{ course.id }}/rules/{{ rule.id }}/edit/draft"
+         hx-trigger="every 1.5s" hx-target="#rule-modal-root" hx-swap="innerHTML"></div>
+    {% endif %}
+
+    <label class="form-field">
+      <span class="field-label-row">
+        <span>Description</span>
+        <span class="char-count" data-count-for="text">0/{{ text_maxlen }}</span>
+      </span>
+      <textarea name="text" class="auto-grow" rows="2" required
+                maxlength="{{ text_maxlen }}">{{ rule.text }}</textarea>
+    </label>
+
+    {% set current_types = rule.document_type | doc_types %}
+    <fieldset class="form-field doc-type-field rule-type-field" id="edit-type-field">
+      <legend>Applies to</legend>
+      <button type="button" class="doc-type-toggle" id="edit-type-all"
+              aria-pressed="false">Select all</button>
+      <div class="doc-type-options rule-type-options">
+        {% for type in document_types %}
+          <label class="doc-type-option" title="{{ doc_type_describe(type) }}">
+            <input type="checkbox" name="document_type" value="{{ type }}"
+                   {{ "checked" if type in current_types }}>
+            <span class="doc-type-name">{{ doc_type_label(type) }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <p class="field-hint">
+        Changing this just re-files the rule under the types you pick. The
+        description stays the same.
+      </p>
+      <p class="field-error" id="edit-type-error" role="alert" hidden>
+        Select at least one document type.
+      </p>
+    </fieldset>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>Severity</span>
+        <select name="severity" class="fancy-select">
+          {% for s in severities %}
+          <option value="{{ s }}" {{ "selected" if s == rule.severity }}>{{ s | capitalize }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Area</span>
+        <select name="category" class="fancy-select">
+          {% for c in categories %}
+          <option value="{{ c }}" {{ "selected" if c == rule.category }}>{{ category_label(c) }}</option>
+          {% endfor %}
+        </select>
+        <span class="field-hint">Which report area this rule counts toward.</span>
+      </label>
+    </div>
+
+    <details class="rule-advanced"{% if error %} open{% endif %}>
+      <summary>
+        Advanced: see the exact check (for experts)
+        <a class="cel-help" href="https://cel.dev" target="_blank" rel="noopener"
+           title="This is the precise, computer-readable version of your rule that the system runs. You almost never need to open or change it; the plain-English description above is enough."
+           aria-label="What is this?" onclick="event.stopPropagation()">?</a>
+      </summary>
+      <p class="field-hint cel-note">
+        You almost never need this. Your plain-English description above is
+        enough. Change it only if you want to fine-tune exactly how the check
+        works. It is checked for mistakes when you save.
+      </p>
+
+      {% if fields %}
+      <div class="contract-fields">
+        <span class="field-label-row">
+          <span class="contract-fields-title">What the expression reads</span>
+          <button type="button" class="cel-help" id="agg-help-toggle"
+                  aria-expanded="false" aria-controls="agg-help"
+                  aria-label="How combining across pages works">?</button>
+        </span>
+        <p class="field-hint contract-fields-note">
+          Each fact below is read from every page of the document, then combined
+          into the single value the expression sees.
+        </p>
+        <div class="agg-help" id="agg-help" hidden>
+          <p>The document is read one page at a time, so each fact gets one
+          reading per page. The dropdown under a fact says how those readings
+          are merged into the single value the expression uses:</p>
+          <dl>
+            <dt>yes if at least one page shows it</dt>
+            <dd>One page is enough.</dd>
+            <dt>yes only if every page that mentions it shows it</dt>
+            <dd>Pages that say nothing about it are ignored.</dd>
+            <dt>the list of page numbers where it appears</dt>
+            <dd>Not yes/no or a total, but the pages themselves, like
+            <code>[3, 7]</code>. Pick this when the rule is about
+            <em>where</em> something happens, for example, that an example
+            must follow a formula within a few pages.</dd>
+            <dt>all pages added together</dt>
+            <dd>3 on one page and 2 on another make 5. For a yes/no fact this
+            counts the pages where it's true.</dd>
+            <dt>the highest / lowest value on any page</dt>
+            <dd>One page's number: the biggest, or the smallest.</dd>
+            <dt>the first value found</dt>
+            <dd>Reading from page 1, the first page that has one.</dd>
+            <dt>every distinct item, from all pages</dt>
+            <dd>One combined list, without repeats.</dd>
+            <dt>each item with the page where it appears</dt>
+            <dd>Item–page pairs, like <code>kinetic energy (p. 3)</code>, so
+            the expression can match <em>which</em> item appears
+            <em>where</em>. Works only if the wording above tells the reader
+            to name items the same way on every page.</dd>
+          </dl>
+          <p>If you change a dropdown, the value can change shape, for
+          example, a total can become a list of pages. Update the expression
+          below to match.</p>
+        </div>
+        <ul class="contract-field-list">
+          {% for f in fields %}
+          {% set choices = agg_choices.get(f.type, ()) %}
+          <li class="contract-field">
+            <code class="contract-field-name">doc.{{ f.name }}</code>
+            <p class="field-hint contract-field-instruction">{{ f.instruction }}</p>
+            <label class="contract-field-agg">
+              <span>Combined across pages as</span>
+              <input type="hidden" name="agg_field" value="{{ f.name }}">
+              <select name="agg_value" class="fancy-select">
+                {% if f.agg not in choices %}
+                <option value="{{ f.agg }}" selected>{{ agg_label(f.agg, f.type) }}</option>
+                {% endif %}
+                {% for a in choices %}
+                <option value="{{ a }}" {{ "selected" if a == f.agg }}>{{ agg_label(a, f.type) }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <label class="form-field">
+        <span class="field-label-row">
+          <span>CEL expression</span>
+          <span class="char-count" data-count-for="cel">0/{{ cel_maxlen }}</span>
+        </span>
+        <textarea name="cel" class="auto-grow rule-edit-cel" rows="2" spellcheck="false" required
+                  maxlength="{{ cel_maxlen }}">{{ rule.cel }}</textarea>
+      </label>
+    </details>
+
+    {% if error %}
+    <details class="rule-edit-error" open>
+      <summary>⚠ Validation failed, couldn't save</summary>
+      <pre>{{ error }}</pre>
+      {% if "does not declare" in error %}
+      <button type="button" class="btn btn-sm reconcile-btn"
+              hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/reconcile"
+              hx-include="closest form" hx-target="#rule-modal-root"
+              hx-swap="innerHTML" hx-disabled-elt="this">
+        <span class="spinner btn-spinner"></span>Declare the missing facts with the assistant
+      </button>
+      <p class="field-hint">Your expression stays exactly as written; the
+      assistant only describes how to extract the new facts, and you review
+      the result before saving.</p>
+      {% endif %}
+    </details>
+    {% endif %}
+
+    <div class="modal-actions">
+      {% if waiting %}
+      {# Discard the draft, including any late worker result. #}
+      <button type="button" class="btn"
+              hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/edit/cancel"
+              hx-target="#rule-modal-root" hx-swap="innerHTML" hx-disabled-elt="this">
+        <span class="spinner btn-spinner"></span>Stop and discard
+      </button>
+      {% else %}
+      <button type="button" class="btn" data-close-modal>Cancel</button>
+      {% endif %}
+      <button type="submit" class="btn btn-primary" {% if waiting %}disabled{% endif %}>
+        <span class="spinner btn-spinner"></span>Save changes
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  (function () {
+    const dlg = document.getElementById("rule-edit-dialog");
+    if (!dlg) return;
+    if (!dlg.open) dlg.showModal();
+    // Initialize fields injected after page load.
+    dlg.querySelectorAll("textarea.auto-grow").forEach((el) => {
+      if (window.resizeAutoGrow) resizeAutoGrow(el);
+      if (window.updateCharCount) updateCharCount(el);
+    });
+    if (window.enhanceSelects) enhanceSelects(dlg);
+
+    const helpBtn = dlg.querySelector("#agg-help-toggle");
+    if (helpBtn) {
+      const panel = dlg.querySelector("#agg-help");
+      helpBtn.addEventListener("click", () => {
+        panel.hidden = !panel.hidden;
+        helpBtn.setAttribute("aria-expanded", String(!panel.hidden));
+      });
+    }
+    // Prevent dismissal while the draft is being generated.
+    const waiting = dlg.dataset.waiting === "true";
+    const flashWait = () => {
+      const note = dlg.querySelector(".reconcile-wait");
+      if (!note) return;
+      note.classList.remove("attention");
+      void note.offsetWidth; // restart the animation
+      note.classList.add("attention");
+    };
+    const close = () => {
+      if (waiting) { flashWait(); return; }
+      dlg.close(); dlg.remove();
+    };
+
+    dlg.querySelector("[data-close-modal]")?.addEventListener("click", close);
+    dlg.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
+
+    dlg.addEventListener("click", (e) => { if (e.target === dlg) close(); });
+    // Close after the rules swap settles.
+    document.body.addEventListener(
+      "rule-modal-close", () => setTimeout(close, 0), { once: true }
+    );
+
+
+    const field = dlg.querySelector("#edit-type-field");
+    const typeErr = dlg.querySelector("#edit-type-error");
+    wireSelectAll(field, dlg.querySelector("#edit-type-all"), (boxes) => {
+      if (boxes.some((b) => b.checked)) {
+        typeErr.hidden = true;
+        field.classList.remove("has-error");
+      }
+    });
+    // Validate through htmx:confirm to avoid racing the request.
+    dlg.querySelector("form").addEventListener("htmx:confirm", (e) => {
+      if (!field.querySelector('input[name="document_type"]:checked')) {
+        e.preventDefault();
+        typeErr.hidden = false;
+        field.classList.add("has-error");
+      }
+    });
+  })();
+</script>

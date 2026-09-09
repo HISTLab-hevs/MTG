@@ -1,0 +1,1223 @@
+/* MTG · Mind The Gap, the page components.
+   Cards, tables, lists, the rule rows, the report views and the chat panes.
+   Built on the tokens and primitives in base.css. */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.3rem;
+  margin-bottom: 1.25rem;
+}
+
+/* A card title carries a hairline rule as well as size, weight and colour: a
+   line separates whatever the title's length or what follows, and makes the
+   card read as a titled section rather than a paragraph starting in bold. Drawn
+   full-bleed to the card's padding, the way Stripe and Linear draw a section
+   header, so it reads as the card's own edge and not as an underline.
+
+   Only the title that opens a card gets it: a heading further down is a step
+   within the card, and a second rule would make it look like two. */
+.card > h2:first-child,
+.card > .report-block-head:first-child,
+.card > .page-header:first-child > h2 {
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+/* When a card leads with a title and its explanation, the line belongs under
+   the pair: the sentence explains the title, so it sits on the title's side of
+   the rule. The rule above is cancelled and re-drawn under the paragraph. */
+.card > h2:first-child:has(+ p) { padding-bottom: 0; margin-bottom: 0.5rem; border-bottom: none; }
+.card > h2:first-child + p { padding-bottom: 0.75rem; margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border); }
+/* A header row that holds the title plus a status or a button keeps its own
+   layout (defined with the report styles below); it only gains the rule, via
+   the .card > .report-block-head:first-child selector above. */
+
+/* ---------- Tables ---------- */
+.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.table th { text-align: left; color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.table th, .table td { padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); }
+.table tr:last-child td { border-bottom: none; }
+.row-disabled td { color: var(--muted); }
+
+/* ---------- Item lists ---------- */
+.item-list { list-style: none; margin: 0; padding: 0; }
+.item-row { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+.item-row:last-child { border-bottom: none; }
+.item-link { font-weight: 600; color: var(--text); }
+.item-link:hover { color: var(--accent); text-decoration: none; }
+
+/* Materials as full-width rows: a long filename gets the whole width instead of
+   being clipped in a card, and the chevron opens the file's version history in
+   place (the same disclosure the course analysis uses). */
+.doc-list { list-style: none; margin: 0; padding: 0; }
+.doc-row {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  padding: 0.7rem 0.9rem; margin-bottom: 0.6rem;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); transition: border-color 120ms;
+}
+.doc-row:hover { border-color: var(--accent); }
+.doc-row.is-processing { opacity: 0.75; }
+.doc-row.is-failed { border-color: var(--accent); }
+.doc-row-details { flex: 1; min-width: 0; }
+.doc-row-summary {
+  display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer;
+  list-style: none; border-radius: 6px; padding: 0.15rem 0.3rem; margin: -0.15rem -0.3rem;
+}
+.doc-row-summary:hover { background: var(--neutral-bg); }
+.doc-row-summary::-webkit-details-marker { display: none; }
+.doc-row-summary::marker { content: ""; }
+.doc-row-chevron { color: var(--muted); font-size: 1.05rem; line-height: 1.4; transition: transform 0.15s ease; }
+.doc-row-details[open] .doc-row-chevron { transform: rotate(90deg); }
+.doc-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.doc-row-title { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+/* The filename wraps rather than truncating: it is the one thing the row is
+   about, and PDFs out of a course folder carry long, near-identical names. */
+.doc-name { font-weight: 600; overflow-wrap: anywhere; }
+.doc-row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.7rem; color: var(--muted); font-size: 0.82rem; }
+.doc-row-error { color: var(--accent); font-size: 0.82rem; }
+.doc-row-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+/* Version history, revealed under the row. Every version reads the same, one
+   ink, one weight: they are the same kind of thing, and marking the current one
+   by recolouring its whole line made the older uploads look disabled. Which one
+   is current is said by the dot on the left (a fixed lane, so nothing shifts)
+   and by the word in the meta line. */
+.doc-versions { list-style: none; margin: 0.6rem 0 0.2rem; padding: 0.6rem 0 0 1.65rem; border-top: 1px solid var(--border); }
+.doc-version { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  padding: 0.15rem 0; font-size: 0.85rem; }
+.doc-version-mark { flex: 0 0 auto; width: 0.42rem; height: 0.42rem; border-radius: 50%;
+  background: transparent; }
+.doc-version.is-current .doc-version-mark { background: var(--accent); }
+.doc-version-link { font-weight: 600; color: var(--text); }
+.doc-version-link:hover { color: var(--accent); }
+.doc-version-meta { color: var(--muted); }
+.doc-version-current { font-weight: 600; color: var(--accent); }
+/* The bin sits at the far right of its row. It stays visible rather than
+   appearing on hover: a control you cannot see is a control you cannot plan
+   for, and hover-only actions are invisible on touch entirely. */
+.doc-version-actions { margin-left: auto; }
+
+
+/* ---------- Course index ---------- */
+.courses-page { display: flex; flex-direction: column; gap: 1.25rem; }
+.course-create-card { margin-bottom: 0; }
+.course-create-form { width: 100%; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.form-field .char-count { color: var(--muted); font-size: 0.76rem; font-weight: 500; }
+.auto-grow { min-height: 5.1rem; max-height: 13rem; resize: none; overflow-y: hidden; }
+.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.course-tile-wrap { position: relative; }
+/* Edit + Delete sit together in the corner, revealed on hover/focus. They float
+   over the tile's own text, so each carries the card's surface behind it and a
+   hairline edge: without that the glyphs would sit on a course description. */
+.course-tile-actions { position: absolute; top: 0.6rem; right: 0.6rem; display: flex;
+  gap: 0.25rem; opacity: 0; transition: opacity 120ms; }
+.course-tile-actions .btn-icon { background: var(--surface); border-color: var(--border); }
+.course-tile-delete { margin: 0; }
+.course-tile-wrap:hover .course-tile-actions,
+.course-tile-actions:focus-within { opacity: 1; }
+.course-tile {
+  display: flex;
+  flex-direction: column;
+  height: 10.5rem;
+  padding: 1rem;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 120ms, box-shadow 120ms, transform 120ms;
+}
+.course-tile:hover { border-color: var(--accent); box-shadow: 0 5px 16px rgba(24, 19, 20, 0.08); text-decoration: none; transform: translateY(-1px); }
+.course-tile-title { display: -webkit-box; font-weight: 700; line-height: 1.35; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.course-tile-description { display: -webkit-box; color: var(--muted); font-size: 0.9rem; margin-top: 0.45rem; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+.course-tile-meta { color: var(--muted); font-size: 0.8rem; margin-top: auto; padding-top: 1rem; }
+@media (max-width: 1100px) { .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .course-grid { grid-template-columns: 1fr; } }
+
+/* Course rules. One row: on/off switch · what the rule says · improvement area ·
+   rule type · severity · actions. The header row uses the SAME grid template,
+   which is what keeps each caption sitting over its own column. */
+.rule-head,
+.rule-row {
+  display: grid;
+  /* Five columns by default: no custom rules here, so no buttons and no empty
+     strip of reserved space. */
+  /* The severity column is sized for the one-letter H/M/L badge, so what used
+     to be reserved for the word "Medium" goes back to the rule text. */
+  grid-template-columns: 2.1rem minmax(0, 1fr) 8.5rem 5.5rem 3rem;
+  gap: 0.85rem;
+  align-items: start;
+}
+/* A section holding at least one custom rule adds the actions column, at a
+   FIXED width reserved on every row of that section. With `auto` it grew only
+   on the custom rows, and that extra width came out of the badge columns, so
+   their "Default/Custom" and severity chips slid out of line. */
+.rule-section.has-actions .rule-head,
+.rule-section.has-actions .rule-row {
+  grid-template-columns: 2.1rem minmax(0, 1fr) 8.5rem 5.5rem 3rem 4.5rem;
+}
+/* .item-row also matches these rows and sets padding/border; the grid above
+   only overrides its display, so the spacing and separators stay. The side
+   padding gives the switched-off row's grey plate room to sit inside the card
+   instead of butting against its edge. */
+.rule-row { padding: 0.7rem 0.5rem; margin: 0 -0.5rem; }
+.rule-head {
+  padding: 0 0 0.35rem; margin-bottom: 0.2rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.7rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+/* The switch column is too narrow for the word; the switch itself says it. */
+.rule-head-switch { visibility: hidden; }
+/* "Severity" is wider than the one-letter column it labels, so it overhangs to
+   the left into the gap after "Rule type" instead of wrapping to two lines. The
+   caption is the widest thing in this band; the overhang is tuned per breakpoint
+   below, where the columns tighten and the two captions would otherwise touch.
+   The word itself is kept whole: an abbreviation in the only place that names
+   the column would leave the letters below it unexplained. */
+.rule-head-sev { white-space: nowrap; text-align: right; margin-left: -2.5rem; }
+/* Between the phone breakpoint and a roomy desktop, 422px of fixed columns
+   squeezes the rule text to a few words per line. Tighten the badge columns
+   and let the actions size to their buttons before the layout stacks. */
+@media (max-width: 1300px) {
+  .rule-head,
+  .rule-row { grid-template-columns: 2.1rem minmax(0, 1fr) 7rem 5rem 2.6rem; gap: 0.7rem; }
+  .rule-section.has-actions .rule-head,
+  .rule-section.has-actions .rule-row {
+    grid-template-columns: 2.1rem minmax(0, 1fr) 7rem 5rem 2.6rem 4.5rem;
+  }
+  /* The gap shrinks with the columns, so "Severity" would reach back far enough
+     to touch "Rule type". Here the two captions share one right-aligned label
+     instead: the Default/Custom chips name their own column, the letters do not,
+     so severity is the one that keeps the word. */
+  .rule-head-type { visibility: hidden; }
+  .rule-head-sev { margin-left: -5rem; }
+}
+/* Narrower still: the improvement area is the first thing to go, it is
+   context rather than state, and it stays available in the report. */
+@media (max-width: 1080px) {
+  .rule-head,
+  .rule-row { grid-template-columns: 2.1rem minmax(0, 1fr) 5rem 2.6rem; }
+  .rule-section.has-actions .rule-head,
+  .rule-section.has-actions .rule-row {
+    grid-template-columns: 2.1rem minmax(0, 1fr) 5rem 2.6rem 4.5rem;
+  }
+  .rule-head-area, .rule-cell-area { display: none; }
+}
+
+.rule-list .rule-row:last-child { border-bottom: none; }
+.rule-main { min-width: 0; }
+/* Every cell hangs from the top of the row and shares one nudge down, so the
+   switch, the badges and the buttons all sit on the rule's first line. Centring
+   them inside their own cell (the old behaviour) drifted out of line as soon as
+   the rule text wrapped to two lines or gained a rationale underneath. */
+.rule-cell { display: flex; align-items: flex-start; min-width: 0; padding-top: 0.15rem; }
+.rule-text { font-size: 0.92rem; }
+/* The improvement area is plain text, not a fourth badge: three chips plus two
+   buttons on one row already carries as much colour as the row can hold, and
+   this column is a classification the eye scans rather than a status. */
+.rule-area { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.rule-switch { flex-shrink: 0; display: flex; align-items: flex-start; padding-top: 0.2rem; }
+.rule-toggle {
+  position: relative; width: 2.1rem; height: 1.2rem; padding: 0;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--neutral-bg); cursor: pointer;
+  transition: background 120ms, border-color 120ms;
+}
+.rule-toggle:hover { border-color: var(--muted); }
+.rule-toggle.is-on { background: var(--success); border-color: var(--success); }
+.rule-toggle.is-on:hover { border-color: var(--success); }
+.rule-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.rule-toggle-knob {
+  position: absolute; top: 50%; left: 0.14rem; transform: translateY(-50%);
+  width: 0.85rem; height: 0.85rem; border-radius: 50%;
+  background: var(--surface); box-shadow: var(--shadow);
+  transition: left 120ms;
+}
+.rule-toggle.is-on .rule-toggle-knob { left: calc(100% - 0.99rem); }
+/* Visible to screen readers only: the switch's own label, since the control
+   itself is a graphic. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.rule-why { margin: 0.25rem 0 0; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+/* Note under a rule that is shared across several document types. */
+/* "Also applies to …". Saturated blue text on a tinted blue panel is exactly
+   the case where subpixel antialiasing throws coloured fringes, which read as a
+   violet shimmer while the list scrolls. A darker, less saturated ink plus
+   greyscale antialiasing removes the fringing; `transform: translateZ(0)` keeps
+   the panel on its own layer so scrolling repaints it whole rather than in
+   bands. */
+.rule-shared { margin: 0.3rem 0 0; font-size: 0.78rem; line-height: 1.4;
+  color: var(--info-ink); background: var(--info-bg); border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0); }
+/* The rules list is swapped wholesale by htmx (toggle/accept/delete): opt out
+   of browser scroll anchoring, which otherwise "re-anchors" mid-swap and
+   nudges the viewport; app.js restores the exact scroll position instead. */
+#rules-area { overflow-anchor: none; }
+
+/* Banner in the edit modal when the rule spans several types. */
+.modal-note { margin: 0; font-size: 0.82rem; line-height: 1.45; color: var(--info-ink);
+  background: var(--info-bg); border-radius: 6px; padding: 0.5rem 0.7rem;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* An active rule states itself in full ink and medium weight: it is the thing
+   the row is about, so it must outweigh the badges beside it.
+   A SWITCHED-OFF rule fades as a whole, text, rationale and shared note alike,
+   which is what "off" looks like: it is still readable, still editable, just
+   not in force. No strikethrough (that reads as deleted, and the rule is not)
+   and no grey plate behind the note (a tinted panel on a faded row draws the
+   eye to the one row that is inactive). */
+.rule-row .rule-text { font-weight: 600; color: var(--text); }
+/* A switched-off rule has to be obvious while scanning, not only when read, so
+   it changes on three channels at once (the same way a disabled control does in
+   Primer/Material): the whole row sits on a grey plate that runs the full width,
+   its text drops to muted, and its badges desaturate. Colour alone was not
+   enough, the fade was visible only next to an active row for comparison.
+   A word says it too, for anyone who cannot see the difference at all. */
+.rule-inactive { background: var(--bg); border-radius: 6px; }
+.rule-inactive .rule-text,
+.rule-inactive .rule-why,
+.rule-inactive .rule-area { color: var(--muted); }
+.rule-inactive .rule-shared { color: var(--muted); background: transparent;
+  padding-left: 0; padding-right: 0; }
+.rule-inactive .rule-cell .badge { opacity: 0.55; filter: grayscale(0.5); }
+/* "Off" spelled out next to the rule, so the state does not depend on noticing
+   a shade. Small and muted: it is a state, not a heading. */
+.rule-off-tag {
+  display: inline-block; margin-right: 0.4rem;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--neutral);
+  background: var(--neutral-bg); border: 1px solid color-mix(in srgb, var(--neutral) 22%, transparent);
+  border-radius: 5px; padding: 0.02rem 0.32rem; vertical-align: 0.08em;
+}
+/* Left-aligned inside the reserved column, so the pair sits a normal column gap
+   from Severity instead of being flung to the far edge of the card, and the two
+   buttons breathe between themselves. Aligned to the top like every other cell,
+   so they stay on the rule's first line. */
+/* Edit and delete as icons (see .btn-icon): the row already names the rule, so
+   the words only repeated it. Both controls have the same square footprint and
+   the same gap, so the pair is a straight block on every row rather than two
+   buttons of different widths. Aligned to the top like every other cell, so
+   they stay on the rule's first line. */
+.rule-actions { align-items: flex-start; justify-content: flex-start;
+  padding-top: 0.02rem; }
+/* Advanced (CEL) section in the edit modal, collapsed by default; professors
+   review rules by their plain-language text, the CEL is opt-in for manual edits. */
+.rule-advanced { margin-top: 0.3rem; }
+.rule-advanced summary { cursor: pointer; font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; }
+.rule-advanced summary:hover { color: var(--text); }
+.rule-advanced[open] summary { margin-bottom: 0.4rem; }
+.cel-help { display: inline-flex; align-items: center; justify-content: center; width: 1.05rem; height: 1.05rem; border: 1px solid var(--border); border-radius: 50%; font-size: 0.7rem; line-height: 1; color: var(--muted); text-decoration: none; }
+.cel-help:hover { color: var(--text); border-color: var(--muted); }
+button.cel-help { background: none; padding: 0; cursor: pointer; font: inherit; font-size: 0.7rem; flex-shrink: 0; }
+.cel-note { margin: 0 0 0.5rem; }
+
+/* "What the expression reads": the rule's extracted facts, each with its
+   across-pages combination (editable where the field type allows a choice). */
+.contract-fields { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.85rem; }
+.contract-fields-title { font-size: 0.84rem; font-weight: 600; }
+.contract-fields-note { margin: 0; }
+.contract-field-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.contract-field { border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.65rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.contract-field-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; }
+.contract-field-instruction { margin: 0; }
+.contract-field-agg { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.76rem; color: var(--muted); }
+.contract-field-agg .select-wrap { flex: 1 1 12rem; min-width: 0; }
+.contract-field-agg .select-trigger { font-size: 0.8rem; padding: 0.4rem 0.6rem; }
+
+/* Custom select (select.fancy-select, enhanced by app.js): styled trigger +
+   app-styled listbox, the native open list is OS-drawn and unstylable. */
+.select-wrap { position: relative; }
+.select-wrap select { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%;
+  padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+  font: inherit; font-size: 0.85rem; color: var(--text); text-align: left; cursor: pointer; transition: border-color 120ms; }
+.select-trigger::after { content: ""; width: 1rem; height: 1rem; flex-shrink: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236f686a'%3E%3Cpath d='M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.select-trigger:hover { border-color: var(--muted); }
+.select-trigger:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.select-trigger-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-menu { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; right: 0; margin: 0;
+  padding: 0.3rem; list-style: none; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 12px 32px rgba(24, 19, 20, 0.16); max-height: 15rem; overflow-y: auto; }
+.select-option { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  padding: 0.45rem 0.6rem; border-radius: 6px; font-size: 0.84rem; cursor: pointer; }
+.select-option:hover, .select-option.is-active { background: var(--bg); }
+.select-option[aria-selected="true"] { font-weight: 600; }
+.select-option[aria-selected="true"]::after { content: "✓"; flex-shrink: 0; color: var(--accent); font-size: 0.8em; }
+.agg-help { border: 1px solid var(--border); border-radius: 6px; padding: 0.55rem 0.7rem; font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
+.agg-help p { margin: 0; }
+.agg-help dl { margin: 0 0 0.45rem; }
+.agg-help dt { font-weight: 600; color: var(--text); margin-top: 0.45rem; }
+.agg-help dd { margin: 0; }
+
+/* ---------- Rule generation review feed ---------- */
+.review-item { padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.review-item:last-child { border-bottom: none; }
+.review-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.review-note { font-size: 0.78rem; color: var(--muted); }
+.review-request { margin: 0; padding: 0.1rem 0 0.1rem 0.75rem; border-left: 3px solid var(--border); color: var(--muted); font-size: 0.88rem; font-style: italic; }
+.review-step { margin: 0; font-size: 0.85rem; color: var(--muted); }
+.review-error { margin: 0; padding: 0.45rem 0.6rem; font-size: 0.75rem; white-space: pre-wrap; word-break: break-word; background: var(--accent-soft); color: var(--accent-dark); border-radius: 6px; align-self: stretch; }
+.review-actions { display: flex; gap: 0.5rem; }
+.review-item .rule-text { margin: 0; }
+
+/* Confirm dialog (shown by app.js instead of window.confirm) */
+.modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(24, 19, 20, 0.2);
+  padding: 1.3rem 1.5rem;
+  max-width: 26rem;
+}
+.modal::backdrop { background: rgba(24, 19, 20, 0.45); }
+.modal-message { margin: 0 0 1.1rem; font-size: 0.95rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+/* Rule edit dialog (reuses the standard .form-field / .auto-grow patterns) */
+.rule-modal { max-width: 34rem; width: calc(100vw - 2rem); }
+.rule-edit-form { display: flex; flex-direction: column; gap: 0.85rem; }
+.modal-head { display: flex; align-items: center; gap: 0.6rem; }
+.modal-head h3 { margin: 0; font-size: 1.1rem; }
+.field-hint { font-weight: 400; font-size: 0.74rem; color: var(--muted); }
+.rule-edit-cel { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.rule-edit-error { background: var(--accent-soft); border-radius: 6px; padding: 0.5rem 0.7rem; }
+.rule-edit-error summary { cursor: pointer; font-size: 0.84rem; font-weight: 600; color: var(--accent-dark); }
+.rule-edit-error pre { margin: 0.5rem 0 0; font-size: 0.78rem; white-space: pre-wrap; word-break: break-word; color: var(--accent-dark); }
+.rule-edit-error .reconcile-btn { margin-top: 0.6rem; }
+.rule-edit-error .field-hint { margin: 0.35rem 0 0.2rem; }
+
+/* Small in-place loading: a spinner in the waiting note, and one inside the
+   Save/reconcile buttons that appears only while their htmx request runs. */
+.spinner { display: inline-block; width: 0.85em; height: 0.85em; flex-shrink: 0;
+  border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 700ms linear infinite; vertical-align: -0.1em; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.reconcile-wait { display: flex; align-items: center; gap: 0.5rem; }
+/* Flashed when the professor tries to dismiss the dialog mid-generation. */
+.reconcile-wait.attention { animation: wait-pulse 700ms ease-out 2; }
+@keyframes wait-pulse {
+  0%, 100% { transform: none; }
+  30% { transform: scale(1.02); background: var(--accent-soft); color: var(--accent-dark); }
+}
+.btn .btn-spinner { display: none; margin-right: 0.4rem; }
+.htmx-request .btn-spinner, .htmx-request.btn .btn-spinner { display: inline-block; }
+
+/* Severity badges (rule list & review). One letter — H / M / L — not the word:
+   at this size the word was the widest thing in the row's right-hand columns
+   and pushed the rule text around, while the scale it names has only three
+   steps. The letter is the same width whatever the level, so a column of them
+   is a single narrow strip the eye can scan; the full word stays available to a
+   screen reader and as a tooltip from the templates. */
+.rule-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.badge-sev {
+  width: 1.5rem; min-width: 1.5rem; padding-left: 0; padding-right: 0;
+  /* .badge is a flex box with a gap, meant for a dot beside a word. One letter
+     needs neither, and the gap would shift it off centre. */
+  gap: 0;
+  justify-content: center; font-weight: 700; letter-spacing: 0;
+}
+.badge-sev-low { background: var(--success-bg); color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent); }
+.badge-sev-medium { background: var(--warning-bg); color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent); }
+.badge-sev-high { background: var(--accent-soft); color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.rule-main .badge-sev { margin-left: 0.5rem; vertical-align: middle; }
+
+/* Document detail: header & versions */
+.doc-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; gap: 1rem; }
+.version-tabs { display: flex; gap: 0.4rem; }
+.version-tab { padding: 0.25rem 0.7rem; border: 1px solid var(--border); border-radius: 999px; font-size: 0.82rem; font-weight: 600; background: var(--surface); color: var(--text); }
+.version-tab.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.version-tab:hover { text-decoration: none; border-color: var(--text); }
+.version-meta { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.version-meta-info { color: var(--muted); font-size: 0.88rem; }
+
+/* ---------- Processing progress ---------- */
+.progress { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-top: 0.75rem; }
+/* The width comes from the markup, so a polled swap renders the bar already at
+   its current length. A CSS transition on a BRAND-NEW element animates from the
+   declared default rather than from what the old element showed, which is what
+   made the bar appear to snap back to the left every couple of seconds; the
+   templates now inline --progress-width, so there is no zero frame to animate
+   away from. The transition still smooths the growth within one element's life
+   when JS updates it. */
+.progress-bar { height: 100%; width: var(--progress-width, 0%); background: var(--accent); border-radius: 999px; transition: width 400ms ease; }
+/* Indeterminate bar for the report-writing phase: there is no per-page progress
+   to track, so a looping sweep just signals "the model is working". */
+.progress-bar-indeterminate { width: 40%; transition: none; animation: progress-sweep 1.3s ease-in-out infinite; }
+@keyframes progress-sweep {
+  0% { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
+
+/* Document viewer: PDF + extracted Markdown side by side */
+.viewer-pane { margin-bottom: 0; }
+/* The professor sees the original document only (no extracted Markdown), so the
+   viewer fills the width and gets more height for comfortable reading. */
+.viewer-pane-full { padding: 0.6rem; }
+.pdf-frame {
+  width: 100%;
+  height: 82vh;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--neutral-bg);
+}
+details summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; }
+details summary:hover { color: var(--accent); }
+
+/* Version diff: which pages changed/added/removed vs. the previous upload. */
+.version-diff-lead { margin: 0 0 0.5rem; }
+.version-diff-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.version-diff-list li { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; }
+.version-diff-list .vd-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; flex: 0 0 auto; }
+.vd-changed .vd-dot { background: var(--warn, #e1a106); }
+.vd-added .vd-dot { background: var(--success, #1a8c4a); }
+.vd-removed .vd-dot { background: var(--danger, #d63031); }
+.vd-unchanged .vd-dot { background: var(--border); }
+.vd-unchanged { color: var(--muted); }
+.version-diff-hint { margin: 0.7rem 0 0; font-size: 0.82rem; }
+
+/* ---------- Report / analysis results ---------- */
+.report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+.report-header h2 { margin-bottom: 0.2rem; }
+.report-run-state { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.run-time { font-size: 0.82rem; }
+
+/* ---------- Per-document expandable verdicts ---------- */
+.report-docs { margin-top: 0.5rem; }
+.report-doc { padding: 0.55rem 0; border-bottom: 1px solid var(--border); }
+.report-docs li:last-child .report-doc { border-bottom: none; }
+.report-doc-summary-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; font-weight: 600; border-radius: 6px; padding: 0.15rem 0.3rem; margin: -0.15rem -0.3rem; list-style: none; }
+.report-doc-summary-row:hover { background: var(--neutral-bg); }
+.report-doc-summary-row::-webkit-details-marker { display: none; }
+.report-doc-summary-row::marker { content: ""; }
+.report-doc-chevron { color: var(--muted); font-size: 1.05rem; line-height: 1; transition: transform 0.15s ease; }
+.report-doc[open] .report-doc-chevron { transform: rotate(90deg); }
+.report-doc-title { color: var(--text); }
+.report-doc-counts { margin-left: auto; display: flex; gap: 0.7rem; font-size: 0.82rem; font-weight: 500; }
+.report-doc-counts .count-pass { color: var(--muted); }
+.report-doc-counts .count-fail { color: var(--accent); }
+/* One opened document is a stack of a dozen checks, each two to four lines of
+   text. With only a hairline between them they ran together into one block of
+   prose, so every check is its own plate: a tinted card, its outcome colour on
+   the left edge, and real space between one and the next. The band down the
+   left is what the eye follows to count them. */
+.verdict-list {
+  margin-top: 0.7rem; padding-left: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.verdict-row {
+  gap: 1rem; align-items: flex-start;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+/* These rows are also .item-row, which draws a bottom rule between siblings.
+   Inside a card each one is now its own bordered plate, so that extra line only
+   doubled up with the plate's own edge. */
+.verdict-row, .verdict-row:last-child { border-bottom: 1px solid var(--border); }
+.verdict-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.verdict-badge { flex-shrink: 0; }
+.verdict-note { font-size: 0.8rem; color: var(--muted); }
+/* The rule's code and severity, on their own line above the rule text. */
+.verdict-ident { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.verdict-row.verdict-fail { border-left-color: var(--accent); background: var(--accent-soft); }
+.verdict-row.verdict-pass { border-left-color: var(--success); }
+/* Not applicable / skipped / error: no outcome colour to claim, so the plate
+   stays neutral and reads as set aside rather than judged. */
+.verdict-row.verdict-na, .verdict-row.verdict-skipped { background: var(--neutral-bg); }
+
+/* Grounded evidence: collapsed by default, shown for any verdict (pass or
+   fail) the extractor cited a source span for. */
+.verdict-evidence { margin-top: 0.3rem; }
+.verdict-evidence > summary { cursor: pointer; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+.verdict-evidence > summary:hover { color: var(--text); }
+.verdict-evidence-hint { font-weight: 400; }
+.verdict-evidence-flat { margin: 0.3rem 0 0; font-size: 0.8rem; color: var(--muted); }
+.verdict-quotes { margin: 0.35rem 0 0; padding: 0 0 0 0.2rem; list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+.fact-quote { margin: 0; font-size: 0.8rem; color: var(--muted); font-style: italic; }
+.fact-quote .badge { font-style: normal; margin-left: 0.3rem; }
+
+/* The extracted facts that explain the verdict (counts, levels, lists). Shown
+   above the source quotes; this is the "why" the verdict came out as it did. */
+.verdict-facts { margin: 0.35rem 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.2rem; }
+.verdict-fact { margin: 0; font-size: 0.8rem; color: var(--text); }
+.verdict-fact .fact-label { color: var(--muted); }
+.verdict-fact .fact-value { font-weight: 600; }
+/* A list-valued fact (e.g. one line per tagged concept): readable per-item
+   lines instead of one run-on string, scrolling when a document has dozens. */
+.fact-items { margin: 0.15rem 0 0; padding-left: 1rem; max-height: 14rem; overflow-y: auto; font-weight: 600; }
+.fact-items li { margin: 0; }
+.why-facts { color: var(--muted); }
+
+/* Chevron on the overview's live-analysis banner (the "open the report" card it
+   was written for is gone; the report list replaced it). */
+.report-open-chevron { margin-left: auto; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+
+/* Report list on the analysis page: every run, newest first. One row = pick it
+   for a comparison (left), open it (the whole middle is the link), delete it
+   (right). */
+.report-list { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+/* `position: relative` anchors the stretched link below, so the whole box is
+   the click target for opening the report, edges and padding included. */
+.report-list-item {
+  position: relative;
+  display: flex; align-items: center; gap: 1.1rem;
+  padding: 0.7rem 0.9rem; border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 0.5rem; background: var(--surface);
+  transition: border-color 120ms, background 120ms, box-shadow 120ms;
+}
+.report-list-item:hover { border-color: var(--accent); background: var(--accent-soft); box-shadow: var(--shadow); }
+/* The newest run is the one the course is judged by; give it a quiet accent. */
+.report-list-item.is-latest { border-left: 3px solid var(--accent); }
+/* One tick per row: "use this run in the comparison". Which of the two is the
+   "before" is not asked here, it is chosen on the comparison page itself, where
+   both dates are visible; asking for a side per row made the professor decide
+   the direction before seeing what they were comparing. */
+.report-pick { display: flex; align-items: center; flex-shrink: 0; }
+.report-pick-opt {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.72rem; color: var(--muted); cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;
+}
+.report-pick-opt input { accent-color: var(--accent); cursor: pointer; margin: 0;
+  width: 0.95rem; height: 0.95rem; }
+.report-pick-opt:has(input:checked) { color: var(--accent); }
+
+/* Compare lives in the card header, beside the word "Reports": it acts on the
+   list, so it belongs to the list's title rather than trailing after the last
+   row. It is disabled until exactly two rows are ticked, with the running count
+   next to it saying how far off that is. */
+.report-list-head { justify-content: flex-start; }
+.report-head-actions { margin-left: auto; display: flex; align-items: center; gap: 0.6rem; }
+.report-compare-count { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.report-head-actions .btn .icon { width: 0.95rem; height: 0.95rem; }
+/* Radios and the delete button must stay clickable over the stretched link, so
+   they are lifted above it (which only spans z-index 0). */
+.report-pick, .report-list-actions { position: relative; z-index: 1; }
+.report-list-main { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 1.4rem; }
+.report-list-open { font-weight: 600; color: var(--text); }
+/* The stretched link: an invisible overlay across the whole row. Keeping it on
+   the <a> (rather than making the row a link) preserves a real link for
+   keyboard and screen-reader users. */
+.report-list-open::after {
+  content: ""; position: absolute; inset: 0; border-radius: var(--radius);
+}
+.report-list-open:hover { text-decoration: none; }
+.report-list-item:hover .report-list-open { color: var(--accent); }
+/* Each score is a value over its label, so the numbers sit on one line and the
+   captions on another: no more "high severity" riding higher than its
+   neighbours because it happened to be a different size. */
+.report-list-scores { display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem; margin-left: auto; }
+.report-list-score { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; }
+.report-list-score-val { font-size: 1.05rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.report-list-score-max { font-size: 0.78rem; font-weight: 500; color: var(--muted); }
+.report-list-score-val.is-warn { color: var(--accent); }
+/* A score the run could not produce reads as a state, not as a number. */
+.report-list-score-val.is-none { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.report-list-score-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.report-list-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+/* The "leads somewhere" mark at the end of a whole-row link. Muted at rest so
+   it does not compete with the scores, and it takes the accent with the row on
+   hover, which is what ties the two together as one target. */
+.report-list-go { display: flex; align-items: center; flex-shrink: 0; color: var(--muted); }
+.report-list-go .icon { width: 1.1rem; height: 1.1rem; }
+.report-list-item:hover .report-list-go { color: var(--accent); }
+.report-list-foot { display: flex; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-top: 0.9rem; }
+
+/* Split report view: report on the left, refinement chat on the right */
+.report-view-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.report-view-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.editable-suggestion { position: relative; }
+.editable-edit-btn { margin-top: 0.4rem; }
+.editable-toolbar { margin-top: 0.4rem; }
+/* While editing, the box grows by its outline + offset, so give the Save/Cancel
+   row extra clearance so it doesn't look stuck to the editing surface. */
+.editable-editing-actions { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+/* Bold/italic toggles, set apart from Save/Cancel by a divider: they act on the
+   text, the others act on the edit. An active format is filled in, so the
+   button shows the state of the caret rather than only offering an action. */
+.editable-format { display: inline-flex; align-items: center; gap: 0.15rem;
+  padding-right: 0.5rem; margin-right: 0.15rem; border-right: 1px solid var(--border); }
+.editable-format .btn-icon { font-size: 0.86rem; line-height: 1; }
+.editable-format .btn-icon.is-active {
+  background: var(--accent-soft); color: var(--accent-dark);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+/* The keyboard route out of edit mode, shown beside the buttons while editing:
+   discoverable at the moment it is usable, and gone the rest of the time. */
+.editable-shortcut-hint { font-size: 0.78rem; }
+@media (max-width: 700px) { .editable-shortcut-hint { display: none; } }
+/* WYSIWYG editing surface: the rendered Markdown becomes directly editable. */
+.editable-rendered.is-editing {
+  outline: 2px solid var(--accent, #6c5ce7);
+  outline-offset: 4px;
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  padding: 0.6rem 0.7rem;
+  min-height: 2.5rem;
+}
+.editable-rendered.is-editing:focus { outline-color: var(--accent, #6c5ce7); }
+.report-split { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.report-doc-pane { display: flex; flex-direction: column; gap: 1.25rem; }
+.report-block-head { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.report-block-head h2 { margin: 0; }
+.report-block { padding: 0.1rem 0; }
+/* "Checks that didn't apply": an appendix the professor opens on demand, the
+   summary row keeps the block-head look plus its own disclosure caret. */
+.report-na { border-top: 1px solid var(--border); padding-top: 1rem; }
+.report-na-summary { list-style: none; margin-bottom: 0; }
+.report-na-summary::-webkit-details-marker { display: none; }
+.report-na-summary::before { content: "▸"; color: var(--text-muted, #888); transition: transform 0.15s; }
+.report-na[open] .report-na-summary::before { transform: rotate(90deg); }
+.report-na[open] .report-na-summary { margin-bottom: 0.4rem; }
+.report-na-summary h2 { font-size: 1.15rem; }
+.report-block-editable { border-left: 3px solid var(--success); padding-left: 0.8rem; }
+.report-block-overall { border-left: 3px solid var(--accent); padding-left: 0.8rem; }
+.report-block-hint { margin: 0.1rem 0 0.5rem; font-size: 0.8rem; }
+.report-doc-section { border-top: 1px solid var(--border); padding-top: 1rem; display: flex; flex-direction: column; gap: 0.85rem; }
+/* Problem → fix pairing: the flagged issue and its higher-order alternative side
+   by side, so the professor reads each gap together with what to do about it. */
+.issue-fix { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; overflow-wrap: anywhere; }
+.issue-fix-fix { border-left: 3px solid var(--success); padding-left: 0.8rem; }
+.issue-fix-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.issue-fix-tag.tag-flag { color: var(--danger, #d63031); }
+.issue-fix-tag.tag-fix { color: var(--success); }
+@media (max-width: 900px) { .issue-fix { grid-template-columns: 1fr; } }
+/* "Why flagged": the rule + grounding quote behind each issue, the neurosymbolic
+   audit trail, shown in plain language (no CEL). Collapsed by default. */
+.why-flagged { margin-top: 0.6rem; }
+.why-flagged > summary { cursor: pointer; font-size: 0.78rem; color: var(--muted); }
+.why-flagged > summary:hover { color: var(--text); }
+.why-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.why-item { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem; font-size: 0.82rem; }
+.why-rule { color: var(--text); }
+.why-quote { flex-basis: 100%; color: var(--muted); font-style: italic; padding-left: 0.2rem; }
+.report-sub { margin: 0 0 0.3rem; font-size: 1rem; font-weight: 650; }
+.report-sub-tag { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-left: 0.4rem; }
+.report-sub-tag.tag-editable { color: var(--success); }
+.report-prose { font-size: 0.9rem; line-height: 1.55; color: var(--text); }
+/* Headings inside generated Markdown are subheadings WITHIN a card, not card
+   titles, so they keep their own small scale rather than the page-level one. */
+.report-prose h1, .report-prose h2, .report-prose h3 { margin: 0.8rem 0 0.4rem; font-size: 0.95rem; font-weight: 650; letter-spacing: 0; }
+.report-prose p { margin: 0 0 0.6rem; }
+.report-prose ul, .report-prose ol { margin: 0 0 0.6rem 1.1rem; }
+.report-prose code { background: var(--neutral-bg); padding: 0.05rem 0.3rem; border-radius: 4px; font-size: 0.85em; }
+
+/* ChatGPT-style assistant: pane is fixed to the viewport height and stays put
+   while the report on the left scrolls; only the message log scrolls inside. */
+.report-chat-pane { position: sticky; top: calc(var(--topbar-h) + 1rem); align-self: start; display: flex; flex-direction: column; gap: 0.75rem; height: calc(100vh - var(--topbar-h) - 2rem); padding-bottom: 0.9rem; }
+.report-chat-head h2 { margin: 0 0 0.25rem; }
+.report-chat-head p { margin: 0; font-size: 0.82rem; }
+.report-chat-head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.report-chat-head-row h2 { margin-bottom: 0.25rem; }
+.chat-new { flex-shrink: 0; white-space: nowrap; font-size: 0.78rem; }
+.report-chat-log { flex: 1 1 0; min-height: 0; border: 1px solid var(--border); border-radius: var(--radius); padding: 0.85rem; overflow-y: auto; overscroll-behavior: contain; background: var(--neutral-bg, #fafafa); display: flex; flex-direction: column; gap: 0.1rem; }
+.chat-empty { margin: auto; text-align: center; }
+.chat-empty p { margin: 0 0 0.75rem; }
+.chat-starters { display: flex; flex-direction: column; gap: 0.4rem; }
+.chat-starter {
+  border: 1px solid var(--border); background: var(--surface, #fff);
+  color: var(--text); border-radius: 999px; padding: 0.4rem 0.85rem;
+  font: inherit; font-size: 0.83rem; cursor: pointer; text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.chat-starter:hover, .chat-starter:focus-visible {
+  border-color: var(--accent); background: var(--accent-soft); outline: none;
+}
+
+.report-chat-form { margin-top: 0; flex-shrink: 0; }
+/* @-mention autocomplete: a small menu anchored above the input. */
+.report-chat-input-wrap { position: relative; }
+.chat-mention-source { display: none; }
+.mention-menu {
+  position: absolute; bottom: calc(100% + 0.35rem); left: 0; right: 0;
+  margin: 0; padding: 0.25rem; list-style: none; z-index: 20;
+  background: var(--surface, #fff); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  max-height: 12rem; overflow-y: auto;
+}
+.mention-item {
+  padding: 0.4rem 0.6rem; border-radius: 7px; font-size: 0.85rem;
+  cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mention-item.is-active, .mention-item:hover { background: var(--accent-soft); }
+.mention-hint { padding: 0.4rem 0.6rem; font-size: 0.78rem; color: var(--text-muted, #666); cursor: default; }
+.chat-context-note { font-size: 0.78rem; margin: 0 0 0.4rem; }
+.chat-context-note code, .report-chat-head code {
+  background: var(--neutral-bg, #f1f1f4); padding: 0.02rem 0.3rem;
+  border-radius: 5px; font-size: 0.92em;
+}
+.chat-context-warn { color: var(--danger, #d63031); }
+.chat-disclaimer {
+  display: flex; align-items: flex-start; gap: 0.4rem;
+  margin: 0.5rem 0 0; padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--neutral-bg, #f7f7f9);
+  color: var(--text-muted, #666); font-size: 0.76rem; line-height: 1.35;
+}
+.chat-disclaimer-icon { flex-shrink: 0; opacity: 0.7; }
+.report-chat-input { display: flex; align-items: flex-end; gap: 0.5rem; border: 1px solid var(--border); border-radius: 14px; padding: 0.4rem 0.4rem 0.4rem 0.7rem; background: var(--surface, #fff); transition: border-color 0.15s; }
+.report-chat-input:focus-within { border-color: var(--accent); }
+.report-chat-input textarea { flex: 1; border: none; outline: none; resize: none; font-family: inherit; font-size: 0.9rem; line-height: 1.45; max-height: 160px; overflow-y: hidden; padding: 0.3rem 0; background: transparent; color: var(--text); }
+/* Once the auto-grow JS hits the 160px cap it adds .is-scroll so the textarea
+   scrolls internally; until then overflow stays hidden so no scrollbar arrows
+   show on a one-line input. */
+.report-chat-input textarea.is-scroll { overflow-y: auto; }
+.report-chat-input .btn { flex-shrink: 0; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; font-size: 1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+.report-chat-input .btn .icon { width: 1rem; height: 1rem; }
+/* Nothing to send yet: the button recedes instead of inviting a click that
+   would do nothing. Grey rather than faded-red, so "not now" reads as a state
+   and not as a broken button (the same way ChatGPT and Claude dim Send). */
+.report-chat-input .btn:disabled {
+  background: var(--neutral-bg); border-color: var(--border);
+  color: var(--muted); opacity: 1;
+}
+
+@media (max-width: 860px) {
+  .report-split { grid-template-columns: 1fr; }
+  .report-chat-pane { position: static; height: auto; }
+  .report-chat-log { max-height: 60vh; }
+}
+
+/* ---------- Course diagnostics charts (report view) ---------- */
+.report-metrics { margin-bottom: 1rem; }
+.metric-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0.5rem 0 1rem; }
+.metric-gauge {
+  flex: 1 1 200px; padding: 0.9rem 1rem; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface);
+}
+.metric-score { font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; }
+.metric-score span { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.metric-label { font-weight: 600; margin-top: 0.25rem; }
+.metric-sub { font-size: 0.82rem; margin: 0.3rem 0 0; }
+.metric-bars { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+.metric-bar-row { display: grid; grid-template-columns: 9rem 1fr 6.5rem; align-items: center; gap: 0.6rem; }
+.metric-bar-name { text-transform: capitalize; font-size: 0.85rem; }
+.metric-bar-track { height: 0.55rem; background: var(--border); border-radius: 999px; overflow: hidden; }
+.metric-bar-fill { display: block; height: 100%; background: var(--success); border-radius: 999px; }
+.metric-bar-fill.is-warn { background: var(--warning); }
+.metric-bar-fill.is-fail { background: #ef4444; }
+.metric-bar-val { text-align: right; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.metric-bar-val.is-fail { color: #ef4444; font-weight: 600; }
+.metric-area-hint { font-size: 0.8rem; margin: 0.2rem 0 0.6rem; }
+
+/* Course charts: radar + severity bar */
+.report-charts { display: flex; flex-wrap: wrap; gap: 2.5rem; margin: 0.5rem 0 1rem; align-items: center; justify-content: center; }
+.report-chart { margin: 0; text-align: center; }
+.report-chart figcaption { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.3rem; }
+
+/* At-a-glance document × area grid */
+.report-summary-grid { margin-bottom: 1rem; }
+.summary-grid-scroll { overflow-x: auto; }
+.summary-grid { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+.summary-grid th, .summary-grid td { border: 1px solid var(--border); padding: 0.4rem 0.6rem; text-align: center; }
+.summary-grid thead th { text-transform: capitalize; background: var(--neutral-bg); font-weight: 600; }
+.summary-grid tbody th { text-align: left; font-weight: 500; }
+.summary-grid-type { display: block; font-size: 0.74rem; color: var(--muted); }
+.grid-cell { font-weight: 700; }
+.grid-pass { color: var(--success); }
+.grid-fail { color: var(--danger, #ef4444); }
+.grid-partial { color: var(--warning); }
+.grid-na { color: var(--muted); }
+
+/* "Fix these first" priority block */
+.report-priorities { margin-bottom: 1rem; border-left: 3px solid var(--warning); }
+.badge-warn { background: var(--warning); color: #fff; }
+
+/* ---------- Report compare ---------- */
+.diff-scores { display: flex; gap: 1.5rem; margin: 0.4rem 0 1rem; }
+.diff-score-label { display: block; font-size: 0.8rem; color: var(--muted); }
+.diff-score-val { font-size: 1.2rem; font-weight: 600; }
+.diff-delta { font-size: 0.85rem; font-weight: 700; margin-left: 0.3rem; }
+.diff-delta.up { color: var(--success); }
+.diff-delta.down { color: #ef4444; }
+/* Why a score has no "before": the run is the first to carry that measure. */
+.diff-score-note { display: block; font-size: 0.75rem; line-height: 1.35; max-width: 22rem; }
+/* "Not assessed" stands where a number would: smaller and muted, so the row
+   still scans as a pair of values rather than as a missing one. */
+.diff-score-none { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+/* The two-column pair (Resolved | Newly broken). The grid's gap spaces the two
+   columns and its own bottom margin spaces it from the card below, since the
+   cards inside drop their individual margin (see .diff-cols .diff-card). */
+.diff-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  align-items: start; margin-bottom: 1rem; }
+/* Card titles, so they follow the page's h2 scale rather than body size. */
+.diff-h { font-size: 1.15rem; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
+.diff-h-good { color: var(--success); }
+.diff-h-bad { color: #ef4444; }
+.diff-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.86rem; }
+.diff-list.diff-muted { color: var(--muted); }
+/* A finding line reads severity, then code, then the text. The two badge
+   columns are fixed so they form straight edges down the list: the severity
+   column is one .badge-sev wide, and the code column fits the longest code the
+   rule set can produce (four characters, `sya1`/`all1`) so a short `a2` does
+   not pull the text left on its row. The text is its own grid column, which is
+   what gives a wrapped line its hanging indent, aligned under the first line
+   rather than back under the badges. */
+.diff-finding { display: grid; grid-template-columns: 1.5rem 3rem 1fr;
+  gap: 0 0.5rem; align-items: baseline; }
+/* The badges are inline-flex and sit slightly high on the shared baseline;
+   nudging them down centres them against the first line of the text. */
+.diff-finding-sev, .diff-finding-code { position: relative; top: 0.1rem; }
+.diff-finding-code .badge-code { margin: 0; }
+/* Long filenames and rule sentences must break rather than push the grid wider
+   than the card. */
+.diff-finding-text { min-width: 0; overflow-wrap: anywhere; }
+.diff-docs .diff-doc-mark { display: inline-block; width: 1rem; font-weight: 700; text-align: center; }
+.diff-doc-added .diff-doc-mark { color: var(--success); }
+.diff-doc-removed .diff-doc-mark { color: #ef4444; }
+.diff-doc-edited .diff-doc-mark { color: #d97706; }
+.compare-prose { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+.compare-pane { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.8rem 1rem; }
+.compare-pane-head { font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+/* Both panes are capped at the shorter one's height (set by the page's own
+   script) and scroll their own text, so the two runs stay level. */
+.compare-pane-body { overflow-y: auto; overscroll-behavior: contain; }
+
+/* Each kind of change is its own card, folded on its own. Open by default, so
+   the comparison reads in full and folds away only what the professor hides. */
+.diff-card { margin-bottom: 1rem; }
+/* Inside the pair the grid's gap does the spacing, so these drop their own
+   margin; the grid carries the gap to the card below (see .diff-cols above).
+   Without that, Resolved/Newly broken sat flush against "Still failing" while
+   every other card in the comparison kept its gap. */
+.diff-cols .diff-card { margin-bottom: 0; }
+.diff-fold > .diff-fold-summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: center; gap: 0.5rem;
+  border-radius: 6px; padding: 0.1rem 0.3rem; margin: -0.1rem -0.3rem;
+}
+.diff-fold > .diff-fold-summary::-webkit-details-marker { display: none; }
+.diff-fold > .diff-fold-summary::marker { content: ""; }
+.diff-fold-summary:hover { background: var(--neutral-bg); }
+.diff-fold-summary .diff-h { margin: 0; }
+.diff-fold-summary:hover .diff-h { color: var(--accent); }
+.diff-fold-chevron { color: var(--muted); font-size: 1.05rem; line-height: 1; transition: transform 0.15s ease; }
+.diff-fold[open] > .diff-fold-summary .diff-fold-chevron { transform: rotate(90deg); }
+/* The count stays visible when the card is folded, so a closed card still says
+   how much is inside. */
+.diff-fold-count {
+  margin-left: auto; min-width: 1.6rem; text-align: center;
+  padding: 0.05rem 0.45rem; border-radius: 999px;
+  background: var(--neutral-bg); color: var(--neutral);
+  font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+/* The heading and its list were 0.7rem apart, close enough that "Resolved" read
+   as the first line of its own list rather than as the label above it. A full
+   line of air separates the two, and the items breathe between themselves. */
+.diff-fold-body { margin-top: 1.15rem; }
+.diff-fold-body .diff-list { gap: 0.6rem; line-height: 1.5; }
+
+/* Which two runs are being compared, and in which direction. Read left to
+   right as "before → after", with the control that flips it at the end, where
+   the sentence finishes. */
+.compare-direction { display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem; }
+.compare-direction-runs { list-style: none; display: flex; align-items: center;
+  flex-wrap: wrap; gap: 0.6rem 1.1rem; margin: 0; padding: 0; }
+.compare-direction-run { display: flex; flex-direction: column; line-height: 1.25; }
+.compare-direction-tag { font-size: 0.7rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.05em; }
+.compare-direction-date { font-weight: 600; font-variant-numeric: tabular-nums; }
+.compare-direction-arrow { color: var(--muted); font-size: 1.1rem; }
+.compare-direction-swap { flex-shrink: 0; }
+.compare-reversed-note { margin: -0.5rem 0 1.25rem; }
+.compare-section-hint { margin: -0.25rem 0 0.85rem; font-size: 0.86rem; }
+/* Boxes read one at a time (the priority lists) keep their own height, so a
+   shorter list is visibly a shorter box. */
+.compare-prose-free .compare-pane { align-self: start; }
+
+@media (max-width: 720px) {
+  .diff-cols, .compare-prose { grid-template-columns: 1fr; }
+}
+
+/* Course overview: analysis summary */
+.overview-report-date { font-size: 0.78rem; }
+.overview-scores { display: flex; flex-wrap: wrap; gap: 1.2rem; margin: 0.6rem 0 0.4rem; }
+.overview-score { display: flex; flex-direction: column; }
+.overview-score-val { font-size: 1.6rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.overview-score-val span { font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+.overview-score-val.is-warn { color: #ef4444; }
+.overview-score-label { font-size: 0.78rem; color: var(--muted); }
+.overview-priorities { list-style: none; margin: 0.3rem 0 0; padding: 0; display: grid; gap: 0.4rem; font-size: 0.85rem; }
+.overview-priorities li { line-height: 1.4; }
+.overview-actions { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
+/* Live analysis banner on the overview: says a run is going and leads to it. */
+.overview-run-live {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.6rem 0.8rem; margin-bottom: 0.7rem;
+  border: 1px solid var(--warning-bg); border-radius: var(--radius);
+  background: var(--warning-bg); color: var(--text);
+  transition: border-color 120ms;
+}
+.overview-run-live:hover { text-decoration: none; border-color: var(--warning); }
+.overview-run-text { flex: 1; min-width: 0; font-size: 0.85rem; }
+.overview-run-live .report-open-chevron { margin-left: 0; font-size: 1.1rem; }
+
+/* ---------- Report assistant chat turns ---------- */
+.chat-turn { margin-bottom: 0.85rem; }
+.chat-turn:last-child { margin-bottom: 0; }
+.chat-msg { margin: 0 0 0.4rem; padding: 0.5rem 0.7rem; border-radius: 10px; font-size: 0.9rem; }
+/* The professor's own message is shown verbatim, so its line breaks are kept
+   and long unbroken strings (a pasted URL) wrap instead of widening the pane. */
+.chat-msg-user { background: var(--accent-soft); color: var(--text); margin-left: 1.5rem;
+  white-space: pre-wrap; word-break: break-word; }
+.chat-msg-assistant { background: var(--surface); border: 1px solid var(--border); margin-right: 1.5rem; }
+.chat-msg-meta { font-size: 0.76rem; margin: 0 0 0.4rem; }
+
+/* Materials chat sits below the document list (not in a sticky side column),
+   so it is a normal card with breathing room and its own bounded log. */
+.materials-chat-pane {
+  margin-top: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem;
+}
+/* The pane has no fixed height here (it sits below the document list), so the
+   log must not collapse to its content: give it a comfortable resting height
+   that grows with the conversation up to a bounded max, then scrolls. */
+.materials-chat-pane .report-chat-log {
+  flex: 0 1 auto; min-height: 16rem; max-height: 32rem;
+}
+
+/* Rich assistant answer: rendered Markdown with tight, readable spacing. */
+.chat-msg-rich { line-height: 1.5; }
+.chat-msg-rich > :first-child { margin-top: 0; }
+.chat-msg-rich > :last-child { margin-bottom: 0; }
+.chat-msg-rich p { margin: 0 0 0.5rem; }
+.chat-msg-rich ul, .chat-msg-rich ol { margin: 0.25rem 0 0.5rem; padding-left: 1.2rem; }
+.chat-msg-rich li { margin: 0.15rem 0; }
+.chat-msg-rich code { background: var(--neutral-bg, #f1f1f4); padding: 0.05rem 0.3rem; border-radius: 5px; font-size: 0.85em; }
+
+/* Inline citation chip: a small superscript pill referencing a source number. */
+.chat-msg-rich .cite {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.1rem; height: 1.1rem; padding: 0 0.25rem; margin-left: 0.12rem;
+  font-size: 0.66rem; font-weight: 600; line-height: 1; vertical-align: super;
+  color: var(--accent-dark, var(--accent)); background: var(--accent-soft);
+  border-radius: 999px; cursor: default;
+}
+
+/* Sources footer: the cited documents/pages, listed once under the answer. */
+.chat-sources {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
+  margin: 0.1rem 1.5rem 0 0; font-size: 0.74rem; color: var(--muted);
+}
+.chat-sources-label { text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+.chat-source {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.12rem 0.5rem 0.12rem 0.3rem; background: var(--neutral-bg, #f4f4f6);
+  border: 1px solid var(--border); border-radius: 999px; color: var(--text);
+}
+.chat-source-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1rem; height: 1rem; font-size: 0.62rem; font-weight: 700;
+  color: var(--accent-dark, var(--accent)); background: var(--accent-soft);
+  border-radius: 999px;
+}
+
+/* Typing indicator: three dots that bounce one at a time while the model works */
+/* A failed turn's inline notice: visually an assistant bubble, but muted, and never a .chat-turn, so it is not persisted or sent as history. */
+.chat-error { color: var(--muted); font-style: italic; }
+.chat-typing { display: inline-flex; gap: 0.28rem; align-items: center; width: fit-content; }
+.chat-typing span { width: 0.42rem; height: 0.42rem; border-radius: 50%; background: var(--muted); animation: chat-dot 1.2s ease-in-out infinite; }
+.chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes chat-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-0.28rem); opacity: 1; }
+}
+
+/* ---------- Analysis run progress (report panel) ---------- */
+.analysis-progress { margin-top: 0.85rem; }
+.analysis-progress-label { font-size: 0.85rem; margin: 0 0 0.1rem; }
+
+/* ---------- How it works guide ---------- */
+.guide-flow { list-style: none; margin: 0 0 1rem; padding: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
+  counter-reset: gstep; }
+@media (max-width: 800px) { .guide-flow { grid-template-columns: 1fr; } }
+.guide-step { position: relative; margin: 0; padding-top: 1.25rem; }
+.guide-step-tab { position: absolute; top: 0.85rem; right: 1rem; font-size: 0.68rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--accent); background: var(--accent-soft); border-radius: 999px;
+  padding: 0.15rem 0.55rem; }
+.guide-step h2 { margin: 0 0 0.45rem; }
+/* Explanation, not body copy of its own: a step down in colour keeps the step
+   title the first thing read in each card. */
+.guide-step p { font-size: 0.9rem; line-height: 1.55; margin: 0 0 0.5rem; color: var(--muted); }
+.guide-step p strong { color: var(--text); }
+.guide-step .guide-why { margin: 0; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+
+.guide-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 800px) { .guide-cols { grid-template-columns: 1fr; } }
+.guide-aside h2 { margin: 0 0 0.5rem; }
+.guide-aside p { font-size: 0.9rem; line-height: 1.55; margin: 0 0 0.6rem; }
+.guide-rules { list-style: none; margin: 0 0 0.6rem; padding: 0;
+  display: flex; flex-direction: column; gap: 0.4rem; }
+.guide-rules li { font-size: 0.86rem; line-height: 1.45; padding: 0.4rem 0.65rem;
+  border-radius: 8px; border-left: 3px solid var(--border); background: var(--bg); }
+.guide-rules li.ok { border-left-color: var(--success); }
+.guide-rules li.no { border-left-color: var(--accent); color: var(--muted); }
+.guide-plain { margin: 0 0 0.6rem; padding-left: 1.1rem; display: flex;
+  flex-direction: column; gap: 0.35rem; font-size: 0.88rem; line-height: 1.5; }
+/* Closing call to action of the guide: text left, button right. */
+.guide-start { display: flex; align-items: center; justify-content: space-between;
+  gap: 1.25rem; flex-wrap: wrap; margin-top: 1rem; }
+.guide-start h2 { margin: 0 0 0.2rem; }
+.guide-start p { margin: 0; font-size: 0.9rem; max-width: 46ch; }
+
+/* Reference marks beside a default rule, and the numbered list they point at.
+   Superscript numerals are the convention an academic reader already reads
+   without being taught, and they stay deliberately quiet: provenance is
+   reassurance, so it must not compete with the rule's own text. */
+/* Its own line under the rule, so the numbers never wrap into the middle of the
+   rule's sentence, and a word labels them so "2" is not left to be guessed at. */
+.rule-refs { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem;
+  margin: 0.35rem 0 0; }
+.rule-refs-label { font-size: 0.74rem; color: var(--muted); margin-right: 0.1rem; }
+.ref-mark {
+  display: inline-block; min-width: 1.15rem; padding: 0 0.25rem;
+  font-size: 0.72rem; font-weight: 700; line-height: 1.5; text-align: center;
+  color: var(--muted); background: var(--neutral-bg);
+  border: 1px solid transparent; border-radius: 4px; text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.ref-mark:hover, .ref-mark:focus-visible {
+  color: var(--accent); background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  text-decoration: none;
+}
+.rule-inactive .ref-mark { opacity: 0.55; }
+
+/* The sources page: a numbered reference list. */
+.ref-list { list-style: none; margin: 0; padding: 0; }
+.ref-entry {
+  display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 0.9rem;
+  padding: 1rem 0; border-bottom: 1px solid var(--border);
+  scroll-margin-top: calc(var(--topbar-h) + 1rem);
+}
+.ref-list > .ref-entry:last-child { border-bottom: none; }
+/* Arriving from a rule's reference mark: mark the entry that was asked for, so
+   a jump into a long list lands somewhere visible rather than anywhere. */
+.ref-entry:target { background: var(--accent-soft); border-radius: 8px;
+  padding-left: 0.7rem; padding-right: 0.7rem; margin: 0 -0.7rem; }
+.ref-num {
+  display: flex; align-items: center; justify-content: center;
+  width: 1.7rem; height: 1.7rem; border-radius: 50%;
+  background: var(--neutral-bg); color: var(--neutral);
+  font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.ref-entry:target .ref-num { background: var(--accent); color: #fff; }
+.ref-body { min-width: 0; }
+.ref-title { font-size: 1.02rem; margin: 0 0 0.3rem; }
+.ref-citation { margin: 0 0 0.3rem; font-size: 0.9rem; line-height: 1.5; }
+.ref-link { margin: 0 0 0.45rem; font-size: 0.82rem; overflow-wrap: anywhere; }
+.ref-rules { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin: 0; }
+.ref-rules-label { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+@media (max-width: 600px) {
+  .ref-entry { grid-template-columns: 1.7rem minmax(0, 1fr); gap: 0.6rem; }
+}
+
+/* About page. Plain fact lists, no numbering: nothing here is a sequence. */
+.about-list { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.7rem; }
+.about-list li { line-height: 1.5; max-width: 68ch; }
+.about-list strong { display: block; }
+.about-list .text-muted { font-size: 0.86rem; }
+.about-note { margin: 0.9rem 0 0; font-size: 0.86rem; max-width: 68ch; }
+.about-intro { display: flex; align-items: flex-start; gap: 1.75rem; flex-wrap: wrap; }
+.about-intro-body { flex: 1; min-width: 18rem; }
+.about-intro-body h2 { margin-top: 0; }
+.about-intro p { margin: 0 0 0.7rem; max-width: 70ch; }
+.about-logo { flex-shrink: 0; width: 229px; height: auto; }
+.about-more { margin: 0.9rem 0 0; }
+.about-more .btn:hover { text-decoration: none; border-color: var(--accent); color: var(--accent); }
+.about-external { font-size: 0.9em; }
+
+/* People, grouped by institution. The photos are square crops served at 2x the
+   rendered size, so they stay sharp on high-density screens. */
+.about-team-name { margin: 1.2rem 0 0.6rem; color: var(--muted); font-size: 0.8rem;
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
+.about-team-name:first-of-type { margin-top: 0.4rem; }
+.about-people { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; }
+.about-person { display: flex; align-items: center; gap: 0.7rem; }
+.about-photo { width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--border); background: var(--neutral-bg); }
+.about-person-text { display: flex; flex-direction: column; }
+.about-person-name { font-weight: 600; color: var(--text); }
+.about-person-name:hover { color: var(--accent); }
+.about-person-role { font-size: 0.84rem; color: var(--muted); }
+
+/* Partner logos. The box is a fixed size and the logo is contained inside it,
+   so a square mark and a wide wordmark occupy the same footprint and every
+   name starts at the same distance from its logo. The image files are already
+   trimmed of transparent padding, which is what stopped the square EHL mark
+   from floating in empty space next to its label. */
+.about-orgs { list-style: none; margin: 0; padding: 0; display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.3rem; }
+.about-org { display: flex; align-items: center; gap: 1rem; }
+.about-org-logo-box { flex: 0 0 auto; width: 100px; height: 56px;
+  display: flex; align-items: center; justify-content: center; }
+.about-org-logo-box:hover { text-decoration: none; }
+.about-org-logo { max-width: 100%; max-height: 100%; width: auto; height: auto;
+  object-fit: contain; }
+.about-org-text { display: flex; flex-direction: column; min-width: 0; }
+.about-org-name { font-weight: 600; }
+.about-org-sub { font-size: 0.84rem; color: var(--muted); }
+
+.about-contacts-lead { margin: 0 0 0.6rem; }
+.about-contacts { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.8rem; }
+.about-contacts li { display: flex; flex-direction: column; }
+.about-contact-name { font-weight: 600; }
+.about-contact-lines { font-size: 0.84rem; color: var(--muted); }
+
+/* Overview setup guide, shown until the course has its first report. */
+.setup-guide { margin-bottom: 1.25rem; }
+.setup-intro h2 { margin: 0 0 0.25rem; }
+.setup-intro p { margin: 0; font-size: 0.9rem; max-width: 62ch; }
+.setup-steps { list-style: none; margin: 1.1rem 0 0; padding: 0;
+  display: grid; gap: 0.55rem; }
+.setup-step { display: grid; grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem; align-items: start; padding: 0.85rem 0.95rem;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+/* Only the step the professor should do now is lifted out of the row. */
+.setup-step.is-next { background: var(--surface); border-color: var(--accent); }
+.setup-step-num { display: flex; align-items: center; justify-content: center;
+  width: 1.6rem; height: 1.6rem; border-radius: 999px; font-size: 0.82rem;
+  font-weight: 700; background: var(--surface); border: 1px solid var(--border);
+  color: var(--muted); }
+.setup-step.is-next .setup-step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* A finished step renders a tick INSTEAD of its number (the template omits the
+   digit), so there is no hidden character to reappear when the page is selected
+   or read by assistive tech. */
+.setup-step-num.is-tick { background: var(--success-bg); border-color: transparent;
+  color: var(--success); }
+.setup-step-num.is-tick::after { content: "\2713"; font-size: 0.9rem; }
+/* Marks a step the professor may skip, so "optional" is visible before reading. */
+.setup-step-tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--muted); background: var(--neutral-bg);
+  border-radius: 999px; padding: 0.1rem 0.45rem; vertical-align: 0.12em; }
+/* The step title carries the full ink and a clear size step over its
+   explanation, so "Run the analysis" reads as the action and the paragraph as
+   the note under it. */
+.setup-step-body h3 { margin: 0 0 0.3rem; font-size: 1.08rem; font-weight: 680;
+  letter-spacing: -0.008em; color: var(--text); }
+.setup-step-body p { margin: 0 0 0.6rem; font-size: 0.88rem; line-height: 1.5;
+  color: var(--muted); max-width: 68ch; }
+.setup-step-body .btn { margin-top: 0.1rem; }
+.setup-step-state { margin: 0 !important; font-weight: 600; color: var(--text) !important; }
+.setup-step.is-done .setup-step-state { color: var(--success) !important; }
+.setup-foot { margin: 1rem 0 0; font-size: 0.86rem; }
+@media (max-width: 700px) {
+  .setup-step { padding: 0.75rem 0.8rem; gap: 0.65rem; }
+}

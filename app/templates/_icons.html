@@ -1,0 +1,63 @@
+{# Parent controls provide accessible names. #}
+
+{% macro _svg(path) %}
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="true" focusable="false">{{ path }}</svg>
+{% endmacro %}
+
+{% macro eye() %}
+{{ _svg('<path d="M2.4 12S5.9 5.5 12 5.5 21.6 12 21.6 12 18.1 18.5 12 18.5 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="2.6"/>' | safe) }}
+{% endmacro %}
+
+{% macro pencil() %}
+{{ _svg('<path d="M4 20h4l10-10a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5 17.5 9.5"/>' | safe) }}
+{% endmacro %}
+
+{% macro trash() %}
+{{ _svg('<path d="M4 7h16"/><path d="M9.5 7V5.2A1.2 1.2 0 0 1 10.7 4h2.6a1.2 1.2 0 0 1 1.2 1.2V7"/><path d="M6.5 7l.8 12.1A1.6 1.6 0 0 0 8.9 20.6h6.2a1.6 1.6 0 0 0 1.6-1.5L17.5 7"/><path d="M10.4 11v5.6M13.6 11v5.6"/>' | safe) }}
+{% endmacro %}
+
+{% macro book() %}
+{{ _svg('<path d="M4 4.8A1.8 1.8 0 0 1 5.8 3H18a1 1 0 0 1 1 1v13.5"/><path d="M4 4.8v13.4A2.8 2.8 0 0 0 6.8 21H19"/><path d="M6.8 17.6H19"/>' | safe) }}
+{% endmacro %}
+
+{% macro user() %}
+{{ _svg('<circle cx="12" cy="8.2" r="3.6"/><path d="M4.8 20a7.2 7.2 0 0 1 14.4 0"/>' | safe) }}
+{% endmacro %}
+
+{% macro compare() %}
+{{ _svg('<path d="M4.5 5.5h6v13h-6z"/><path d="M13.5 5.5h6v13h-6z"/>' | safe) }}
+{% endmacro %}
+
+{% macro swap() %}
+{{ _svg('<path d="M7.5 4.5 4 8l3.5 3.5"/><path d="M4 8h16"/><path d="M16.5 19.5 20 16l-3.5-3.5"/><path d="M20 16H4"/>' | safe) }}
+{% endmacro %}
+
+{% macro undo() %}
+{{ _svg('<path d="M4 9h10.5a4.5 4.5 0 0 1 0 9H8"/><path d="M7.5 5.5 4 9l3.5 3.5"/>' | safe) }}
+{% endmacro %}
+
+{% macro redo() %}
+{{ _svg('<path d="M20 9H9.5a4.5 4.5 0 0 0 0 9H16"/><path d="M16.5 5.5 20 9l-3.5 3.5"/>' | safe) }}
+{% endmacro %}
+
+{% macro chevron() %}
+{{ _svg('<path d="m9.5 5.5 6.5 6.5-6.5 6.5"/>' | safe) }}
+{% endmacro %}
+
+{% macro arrow_left() %}
+{{ _svg('<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>' | safe) }}
+{% endmacro %}
+
+{% macro send() %}
+{{ _svg('<path d="M12 19.5V5"/><path d="M5.5 11.5 12 5l6.5 6.5"/>' | safe) }}
+{% endmacro %}
+
+{% macro upload() %}
+{{ _svg('<path d="M12 15.5V4.5"/><path d="M7.5 9 12 4.5 16.5 9"/><path d="M4.5 15.5v2.6a1.9 1.9 0 0 0 1.9 1.9h11.2a1.9 1.9 0 0 0 1.9-1.9v-2.6"/>' | safe) }}
+{% endmacro %}
+
+{% macro download() %}
+{{ _svg('<path d="M12 4.5v11"/><path d="M7.5 11 12 15.5 16.5 11"/><path d="M4.5 15.5v2.6a1.9 1.9 0 0 0 1.9 1.9h11.2a1.9 1.9 0 0 0 1.9-1.9v-2.6"/>' | safe) }}
+{% endmacro %}

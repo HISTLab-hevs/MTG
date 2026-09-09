@@ -1,0 +1,41 @@
+{% if alert %}
+  <div class="alert alert-{{ alert[0] }}">{{ alert[1] }}</div>
+{% endif %}
+<table class="table">
+  <thead>
+    <tr><th>Name</th><th>Email</th><th>Status</th><th class="text-right">Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr class="{{ 'row-disabled' if not u.is_active }}">
+      <td>{{ u.full_name }}</td>
+      <td>{{ u.email }}</td>
+      <td>
+        {% if u.is_active %}
+          <span class="badge badge-ready">active</span>
+        {% else %}
+          <span class="badge badge-failed">disabled</span>
+        {% endif %}
+      </td>
+      <td class="text-right">
+        <button class="btn btn-ghost btn-sm"
+                hx-post="/admin/users/{{ u.id }}/toggle"
+                hx-target="#users-panel"
+                hx-swap="innerHTML">
+          {{ 'Disable' if u.is_active else 'Enable' }}
+        </button>
+        <button class="btn btn-danger btn-sm"
+                hx-post="/admin/users/{{ u.id }}/delete"
+                hx-target="#users-panel"
+                hx-swap="innerHTML"
+                hx-confirm="Delete {{ u.email }} and all their courses, documents and reports? This cannot be undone."
+                data-confirm-label="Delete user">
+          Delete
+        </button>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-muted">No users yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

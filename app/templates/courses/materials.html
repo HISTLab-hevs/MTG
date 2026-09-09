@@ -1,0 +1,193 @@
+{% extends "courses/course_base.html" %}
+{% block title %}Material · {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Material</h1>
+  <p class="text-muted">Upload course PDFs and track their processing.</p>
+</div>
+
+<section class="card upload-card">
+  <h2>Upload material</h2>
+  <form class="form upload-form"
+        hx-post="/courses/{{ course.id }}/materials/upload"
+        hx-encoding="multipart/form-data"
+        hx-target="#doc-area"
+        hx-swap="innerHTML"
+        hx-indicator="#upload-indicator"
+        hx-on::after-request="if (event.detail.successful) this.reset()">
+    <label class="dropzone" id="dropzone">
+      <input type="file" name="file" accept=".pdf,application/pdf" required
+             id="upload-file" class="dropzone-input">
+      <span class="dropzone-icon" aria-hidden="true">{{ icon.upload() }}</span>
+      <span class="dropzone-text">
+        <span class="dropzone-prompt">Drag a PDF here, or <u>browse</u></span>
+        <span class="dropzone-filename" hidden></span>
+      </span>
+    </label>
+    <fieldset class="form-field doc-type-field" id="doc-type-field">
+      <legend>Document types</legend>
+      <button type="button" class="doc-type-toggle" id="doc-type-all"
+              aria-pressed="false">Select all</button>
+      <div class="doc-type-options">
+        {% for type in document_types %}
+          <label class="doc-type-option">
+            <input type="checkbox" name="document_type" value="{{ type }}">
+            <span class="doc-type-name">{{ doc_type_label(type) }}</span>
+            <span class="doc-type-desc">{{ doc_type_describe(type) }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <p class="doc-type-multi-note" id="doc-type-multi-note" hidden>
+        You selected more than one type. This document will be checked against
+        the rules of <strong>every</strong> type you picked, so it may show
+        findings from all of them, so choose only the types that truly describe
+        this file.
+      </p>
+    </fieldset>
+    <div class="upload-foot">
+      <p class="hint upload-hint">
+        PDF only. Uploading the same file again creates a new version; unchanged
+        pages are not re-checked. A document gets the rules of <em>every</em>
+        type you select.
+      </p>
+      <span class="upload-submit">
+        <span id="upload-indicator" class="htmx-indicator spinner" aria-label="Uploading"></span>
+        <button class="btn btn-primary" type="submit">{{ icon.upload() }} Upload PDF</button>
+      </span>
+    </div>
+  </form>
+</section>
+
+<script>
+  // Wait for deferred app.js.
+  document.addEventListener("DOMContentLoaded", function () {
+    const note = document.getElementById("doc-type-multi-note");
+    wireSelectAll(
+      document.getElementById("doc-type-field"),
+      document.getElementById("doc-type-all"),
+      (boxes) => {
+        if (note) note.hidden = boxes.filter((b) => b.checked).length < 2;
+      }
+    );
+  });
+
+
+  (function () {
+    const zone = document.getElementById("dropzone");
+    const input = document.getElementById("upload-file");
+    if (!zone || !input) return;
+    const promptEl = zone.querySelector(".dropzone-prompt");
+    const nameEl = zone.querySelector(".dropzone-filename");
+    const form = input.closest("form");
+
+    const showName = () => {
+      const file = input.files && input.files[0];
+      nameEl.hidden = !file;
+      promptEl.hidden = !!file;
+      if (file) nameEl.textContent = file.name;
+    };
+    const stop = (e) => { e.preventDefault(); e.stopPropagation(); };
+    ["dragenter", "dragover"].forEach((t) =>
+      zone.addEventListener(t, (e) => { stop(e); zone.classList.add("is-dragover"); }));
+    ["dragleave", "dragend", "drop"].forEach((t) =>
+      zone.addEventListener(t, (e) => { stop(e); zone.classList.remove("is-dragover"); }));
+    zone.addEventListener("drop", (e) => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) return;
+      input.files = e.dataTransfer.files;
+      showName();
+    });
+    input.addEventListener("change", showName);
+    form.addEventListener("reset", () => setTimeout(showName));
+  })();
+</script>
+
+<div id="doc-area">
+  {% with any_processing = documents | selectattr("version.is_processing") | list | length > 0 %}
+    {% include "courses/_document_area.html" %}
+  {% endwith %}
+</div>
+
+<section class="card materials-chat-pane" id="materials-chat">
+  <div class="report-chat-head">
+    <div class="report-chat-head-row">
+      <h2>Ask about the material</h2>
+      <button type="button" class="btn btn-ghost btn-sm chat-new" id="materials-chat-new"
+              hidden title="Start a new chat and clear this conversation">
+        {{ icon.pencil() }} New chat
+      </button>
+    </div>
+    <p class="text-muted">
+      Questions are answered from the uploaded material, with the document and
+      page each answer comes from.
+    </p>
+    <p class="chat-disclaimer">
+      <span class="chat-disclaimer-icon" aria-hidden="true">ⓘ</span>
+      AI-generated answers may contain errors. If a response seems off or
+      incomplete, try rephrasing your question with more specific detail.
+    </p>
+  </div>
+  <div class="report-chat-log" id="materials-chat-log">
+    <div class="chat-empty" id="materials-chat-empty">
+      <p class="text-muted">Ask anything about this course's material. Answers are
+        drawn only from the uploaded documents, with the document and page each one
+        comes from. Try one of these:</p>
+      <div class="chat-starters">
+        <button type="button" class="chat-starter materials-starter"
+                data-prompt="What are the main topics this course covers?">
+          What topics does the course cover?
+        </button>
+        <button type="button" class="chat-starter materials-starter"
+                data-prompt="Which document and page explains ">
+          Find where a topic is explained
+        </button>
+        <button type="button" class="chat-starter materials-starter"
+                data-prompt="Summarise how the students are assessed and what each assessment is worth.">
+          How are students assessed?
+        </button>
+      </div>
+    </div>
+  </div>
+  <form class="report-chat-form"
+        hx-post="/courses/{{ course.id }}/materials/chat"
+        hx-target="#materials-chat-log" hx-swap="beforeend"
+        hx-disabled-elt="find button, find textarea">
+    <input type="hidden" name="history" id="materials-chat-history" value="[]">
+    <div class="report-chat-input">
+      {# JS blocks empty messages without native validation bubbles. #}
+      <textarea name="message" id="materials-chat-message" rows="1"
+                data-max-chars="16000"
+                autocomplete="off"
+                placeholder="Ask about the material…"></textarea>
+      <button class="btn btn-primary" type="submit" aria-label="Send" title="Send (Enter)">{{ icon.send() }}</button>
+    </div>
+  </form>
+</section>
+
+<script>
+  // Wait for app.js; chat history is scoped to user and course.
+  document.addEventListener("DOMContentLoaded", function () {
+    const chat = setupChat({
+      logId: "materials-chat-log",
+      messageId: "materials-chat-message",
+      historyId: "materials-chat-history",
+      newBtnId: "materials-chat-new",
+      emptyId: "materials-chat-empty",
+      storeKey: "materials-chat:{{ user.id }}:{{ course.id }}",
+      compactUrl: "/courses/{{ course.id }}/materials/chat/compact",
+    });
+
+
+    chat.log.addEventListener("click", (e) => {
+      const starter = e.target.closest(".materials-starter");
+      if (!starter) return;
+      chat.message.value = starter.dataset.prompt;
+      chat.message.focus();
+      chat.message.setSelectionRange(chat.message.value.length, chat.message.value.length);
+      chat.grow();
+    });
+  });
+</script>
+{% endblock %}

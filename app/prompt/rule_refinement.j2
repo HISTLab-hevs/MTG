@@ -1,0 +1,26 @@
+You previously compiled a professor's course-quality requirement into a CEL (Common Expression Language) rule with its extraction contract, but your answer was rejected. Produce a corrected version.
+
+Professor's request:
+{{ request }}
+
+Your previous answer:
+{{ previous }}
+
+Why it was rejected:
+{{ error }}
+
+Fix the problem while staying faithful to the request. The rules of the system, in brief:
+- The activation has exactly ONE root: `doc`, a single object aggregated from the document's pages. The expression reads `doc.<field>`; the aggregated value is a SCALAR and you combine scalars with logic, no lists or `all`/`exists` macros, EXCEPT for a positional/cross-page rule using `pages` (see below).
+- Facts are extracted PER PAGE, then collapsed into `doc` by each field's `agg`: "any"/"all" (boolean over pages), "sum"/"max"/"min" (number), "union" (string_list), "first" (string), "pages" (boolean → the ordered LIST of page numbers where it is true, positional rules only), or "tagged_pages" (string_list of short canonical tags per page → the LIST of {item, page} pairs, identity-matching positional rules only; the macro may read `.item` and `.page`).
+- POSITIONAL rules only (an example must FOLLOW each formula, a summary must come AFTER the theory): declare each part as a boolean field with agg "pages", then read the lists with a macro, e.g. `doc.formula_pages.all(p, (p in doc.example_pages) || ((p + 1) in doc.example_pages))` for "an example on the same page or the next". When the rule pairs two things ("its example", "the answer to that question"), scope the responding field's instruction to the trigger kind ("an example applying a formula", not "any example"), the engine tests page distance, not identity. Do not use `pages`/macros for any non-positional rule.
+- ABSOLUTE position ("the last page", "at the end", "the final third", "within the first two"): the engine always supplies `doc.page_count`, the document's total number of pages. Read it directly and NEVER declare it in the contract, and never declare a field of your own for the page total (`last_page_number`, `total_pages`, …), since the extractor sees one page at a time and cannot know it. Combine it with a `pages` field: last page `doc.x_pages.exists(p, p == doc.page_count)`, first N `p <= N`, final third `p * 3 > doc.page_count * 2` (multiply, never divide).
+- Every field the expression accesses must be declared in the contract, and every declared field must be used (`doc.page_count` is the one exception: always readable, never declared). Contract entries have `name` (snake_case), `type` ("boolean" | "number" | "string" | "string_list"), `agg` (one of any/all/sum/max/min/union/first/pages), `instruction` (one self-contained sentence judging a SINGLE page).
+- An `all`/`exists` macro may ONLY be written over a field whose agg is "pages" or "tagged_pages", those are the two that yield a LIST. Every other agg collapses the field to a single value, so `doc.x.all(v, …)` over an "any"/"all" boolean cannot evaluate: read such a field directly (`doc.x`, `!doc.x`). "Every page must do X" is a boolean with agg "all" read as plain `doc.x`, NOT a macro.
+- Semantic judgement goes into field instructions; the CEL only combines values. String functions (`contains`, `startsWith`, `endsWith`, `matches`) on extracted fields are forbidden, declare a boolean field with the test in its instruction instead.
+- Phrase "no page may X" as a boolean with agg "any" describing the violation, then negate it (`!doc.has_x`), to avoid passing an empty document by accident.
+- Allowed CEL: `&&`, `||`, `!`, comparisons, arithmetic (`+`, `-`, `*`), `in`, `size(...)` on a string_list, the always-available `doc.page_count`, and, only for `pages` fields, an `all`/`exists` macro with page arithmetic. The expression must evaluate to a boolean.
+- Also include `severity` ("high" | "medium" | "low") and `category` ("outcomes" | "assessment" | "ai_readiness" | "content" | "clarity").
+- If the rejection is a field conflict, a field name you used already exists for this document type with a different meaning: rename your field, or reuse the existing one with exactly the same type and instruction.
+
+Reply with a single JSON object and nothing else:
+{"description": "<one clear sentence stating the requirement, in the professor's language>", "cel": "<the CEL expression over doc>", "severity": "high|medium|low", "category": "outcomes|assessment|ai_readiness|content|clarity", "contract": [<one entry per field used by the expression>]}

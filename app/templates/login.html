@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · MTG, Mind The Gap</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/img/favicon-64.png">
+  <link rel="icon" href="/static/img/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/auth.css">
+  <link rel="stylesheet" href="/static/css/mobile.css">
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body class="auth-page">
+<main class="auth-split">
+  <section class="auth-hero">
+    <div class="auth-logo">MTG</div>
+    <div class="auth-hero-main">
+      <h1>Mind <em>The</em> Gap</h1>
+      <p class="auth-tagline">
+        See your course the way your students do, and close the gap between
+        what you teach and what your material actually says.
+      </p>
+      <ul class="auth-features">
+        <li><span class="feature-mark">01</span> Upload slides, syllabi and any course PDF</li>
+        <li><span class="feature-mark">02</span> Every page is read and turned into structured text</li>
+        <li><span class="feature-mark">03</span> Get actionable course improvement reports</li>
+      </ul>
+    </div>
+    <p class="auth-foot">A course review workspace for educators</p>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Sign in to your workspace.</p>
+      {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+      <form method="post" action="/login" class="form">
+        <label class="form-field">
+          <span>Email</span>
+          <input type="email" name="email" required autofocus autocomplete="email">
+        </label>
+        <label class="form-field">
+          <span>Password</span>
+          <input type="password" name="password" required autocomplete="current-password">
+        </label>
+        <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+      </form>
+      <p class="hint">Accounts are created by your administrator.</p>
+    </div>
+  </section>
+</main>
+</body>
+</html>

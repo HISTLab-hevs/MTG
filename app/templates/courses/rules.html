@@ -1,0 +1,109 @@
+{% extends "courses/course_base.html" %}
+{% block title %}Rules · {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Rules</h1>
+  <p class="text-muted">
+    Requirements your documents must meet. Your course starts with a ready-made
+    set; add your own below. New to this? See <a
+    href="/how-it-works?course_id={{ course.id }}">How it works</a>.
+  </p>
+</div>
+
+<section class="card">
+  <h2>Add a rule</h2>
+  <form class="form" id="add-rule-form"
+        hx-post="/courses/{{ course.id }}/rules/chat"
+        hx-target="#rules-area"
+        hx-swap="innerHTML"
+        hx-on::after-request="if (event.detail.successful) this.reset()">
+    <div class="form-field rule-text-field">
+      <span>Describe the rule</span>
+      <div class="rule-text-row">
+        <div class="rule-text-box">
+          <textarea name="message" class="auto-grow" rows="2" required
+                    maxlength="{{ rule_char_limit }}"
+                    placeholder="Describe a rule in plain language, e.g. “Each assessment must say which learning outcomes it evaluates”"></textarea>
+          <span class="char-count rule-char-count" data-count-for="message">0/{{ rule_char_limit }}</span>
+        </div>
+        <button class="btn btn-primary" type="submit">Generate</button>
+      </div>
+    </div>
+
+    <fieldset class="form-field doc-type-field rule-type-field" id="rule-type-field">
+      <legend>Applies to</legend>
+      <button type="button" class="doc-type-toggle" id="rule-type-all"
+              aria-pressed="false">Select all</button>
+      <div class="doc-type-options rule-type-options">
+        {% for type in document_types %}
+          <label class="doc-type-option" title="{{ doc_type_describe(type) }}">
+            <input type="checkbox" name="document_type" value="{{ type }}">
+            <span class="doc-type-name">{{ doc_type_label(type) }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <p class="field-error" id="rule-type-error" role="alert" hidden>
+        Select at least one document type.
+      </p>
+    </fieldset>
+  </form>
+  <div class="hint rule-help">
+    <p>Be specific about what the material must do. Click an example to start:</p>
+    <div class="rule-examples">
+      <button type="button" class="rule-example"
+        data-rule="Each assessment must state which learning outcomes it evaluates.">
+        Each assessment states which learning outcomes it evaluates
+      </button>
+      <button type="button" class="rule-example"
+        data-rule="At least 60% of exam questions must require reasoning, not recall.">
+        ≥60% of exam questions require reasoning, not recall
+      </button>
+      <button type="button" class="rule-example"
+        data-rule="If a task is a group project, it must define each member's individual role.">
+        A group project must define individual roles
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Wait for deferred app.js before wiring the type picker.
+    document.addEventListener("DOMContentLoaded", function () {
+      const field = document.getElementById("rule-type-field");
+      if (!field) return;
+      const form = document.getElementById("add-rule-form");
+      const error = document.getElementById("rule-type-error");
+      wireSelectAll(field, document.getElementById("rule-type-all"), (boxes) => {
+        if (boxes.some((b) => b.checked)) {
+          error.hidden = true;
+          field.classList.remove("has-error");
+        }
+      });
+      form.addEventListener("htmx:confirm", (e) => {
+        if (!field.querySelector('input[name="document_type"]:checked')) {
+          e.preventDefault();
+          error.hidden = false;
+          field.classList.add("has-error");
+        }
+      });
+
+
+
+      const textarea = form.querySelector('textarea[name="message"]');
+      document.querySelectorAll(".rule-example").forEach((ex) => {
+        ex.addEventListener("click", () => {
+          textarea.value = ex.dataset.rule;
+          textarea.dispatchEvent(new Event("input", { bubbles: true }));
+          textarea.focus();
+        });
+      });
+    });
+  </script>
+</section>
+
+<div id="rules-area">
+  {% include "courses/_rules_panel.html" %}
+</div>
+
+<div id="rule-modal-root"></div>
+{% endblock %}

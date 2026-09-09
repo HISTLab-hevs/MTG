@@ -1,0 +1,23 @@
+<div class="chat-turn">
+  <p class="chat-msg chat-msg-user">{{ message }}</p>
+  {% if context_filename %}
+  <p class="chat-context-note text-muted">
+    📎 Read the full text of <strong>{{ context_filename }}</strong>{% if context_truncated %} (truncated to fit){% endif %}.
+    {% if ignored_mentions %}Only one document's full text is read per message, so {{ ignored_mentions | join(", ") }} was answered from its findings alone. Mention it on its own to have its text read too.{% endif %}
+  </p>
+  {% endif %}
+  {% if unresolved_mentions %}
+  <p class="chat-context-note chat-context-warn text-muted">
+    Couldn't find {{ unresolved_mentions | map("string") | join(", ") }} among this course's documents.
+  </p>
+  {% endif %}
+  <div class="chat-msg chat-msg-assistant chat-msg-rich">{{ reply_html }}</div>
+  {% if changed_blocks %}
+  <p class="chat-msg-meta text-muted">Updated: {{ changed_blocks | map(attribute="label") | join(", ") }}.</p>
+  {% endif %}
+</div>
+{% for b in changed_blocks %}
+{% with dom_id=b.dom_id, value=b.value, action=b.action, undo_action=b.undo_action, undoable=b.undoable, oob=true %}
+{% include "courses/_editable_block.html" %}
+{% endwith %}
+{% endfor %}

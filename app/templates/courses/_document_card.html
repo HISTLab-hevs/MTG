@@ -1,0 +1,91 @@
+{# Keep actions outside summary to avoid toggling details. #}
+<li class="doc-row {{ 'is-processing' if view.version.is_processing }} {{ 'is-failed' if view.version.status == 'failed' }}">
+  <details class="doc-row-details" data-key="doc-{{ view.document.id }}">
+    <summary class="doc-row-summary">
+      <span class="doc-row-chevron" aria-hidden="true">></span>
+      <span class="doc-row-body">
+        <span class="doc-row-title">
+          <span class="doc-name">{{ view.document.filename }}</span>
+          <span class="badge badge-{{ view.version.status }}"
+                title="Version {{ view.version.version_number }} (the one the analysis uses): {{ status_label(view.version.status) }}">
+            {% if view.version.is_processing %}<span class="spinner spinner-sm"></span>{% endif %}
+            {{ status_label(view.version.status) }}
+          </span>
+          {% set failed_older = view.document.versions | selectattr("status", "equalto", "failed")
+                                | rejectattr("id", "equalto", view.version.id) | list %}
+          {% if failed_older %}
+          <span class="badge badge-muted"
+                title="{{ failed_older | length }} earlier upload(s) of this document failed to process. The analysis uses version {{ view.version.version_number }}.">
+            {{ failed_older | length }} earlier failed
+          </span>
+          {% endif %}
+        </span>
+        <span class="doc-row-meta">
+          <span class="badge badge-muted">{{ doc_type_label(view.document.document_type) }}</span>
+          <span title="This document has {{ view.document.versions | length }} upload(s); the analysis reads this one.">v{{ view.version.version_number }}</span>
+          {% if view.pages_total %}
+            <span>{{ view.pages_done }}/{{ view.pages_total }} pages</span>
+          {% endif %}
+          <span>{{ (view.version.file_size_bytes / 1048576) | round(1) }} MB</span>
+          <span>{{ view.version.created_at.strftime("%d %b %Y") }}</span>
+        </span>
+        {% if view.version.status == 'failed' and view.version.error_message %}
+          <span class="doc-row-error">{{ view.version.error_message }}</span>
+        {% endif %}
+      </span>
+    </summary>
+
+    {% set version_count = view.document.versions | length %}
+    <ul class="doc-versions">
+      {% for v in view.document.versions | reverse %}
+      <li class="doc-version {{ 'is-current' if v.id == view.version.id }}">
+        <span class="doc-version-mark" aria-hidden="true"></span>
+        <a class="doc-version-link"
+           href="/courses/{{ course.id }}/documents/{{ view.document.id }}?version_id={{ v.id }}">
+          v{{ v.version_number }}
+        </a>
+        <span class="doc-version-meta">
+          {{ v.created_at.strftime("%d %b %Y, %H:%M") }}
+          {% if v.page_count %}· {{ v.page_count }} pages{% endif %}
+          · {{ (v.file_size_bytes / 1048576) | round(1) }} MB
+          {% if v.id == view.version.id %}<span class="doc-version-current">· current</span>{% endif %}
+        </span>
+        <span class="badge badge-{{ v.status }}">{{ status_label(v.status) }}</span>
+        <span class="doc-version-actions icon-actions">
+          <form method="post"
+                action="/courses/{{ course.id }}/documents/{{ view.document.id }}/versions/{{ v.id }}/delete"
+                {% if version_count > 1 %}
+                data-confirm="Delete version {{ v.version_number }} of “{{ view.document.filename }}”? Only this upload and its extracted pages are removed; the other versions stay. This cannot be undone."
+                data-confirm-label="Delete version"
+                {% else %}
+                data-confirm="Version {{ v.version_number }} is the only version of “{{ view.document.filename }}”, so deleting it deletes the whole document. This cannot be undone."
+                data-confirm-label="Delete document"
+                {% endif %}>
+            <button class="btn-icon btn-icon-danger" type="submit"
+                    title="{{ 'Delete this version' if version_count > 1 else 'Delete this document (its only version)' }}"
+                    aria-label="{{ 'Delete version ' ~ v.version_number if version_count > 1 else 'Delete this document, its only version' }}">
+              {{ icon.trash() }}
+            </button>
+          </form>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </details>
+
+  <span class="doc-row-actions icon-actions">
+    <a class="btn-icon" href="/courses/{{ course.id }}/documents/{{ view.document.id }}"
+       title="Open this document" aria-label="Open “{{ view.document.filename }}”">
+      {{ icon.eye() }}
+    </a>
+    <form method="post"
+          action="/courses/{{ course.id }}/documents/{{ view.document.id }}/delete"
+          data-confirm="Delete “{{ view.document.filename }}” with all its versions and extractions? This cannot be undone."
+          data-confirm-label="Delete document">
+      <button class="btn-icon btn-icon-danger" type="submit"
+              title="Delete this document" aria-label="Delete “{{ view.document.filename }}”">
+        {{ icon.trash() }}
+      </button>
+    </form>
+  </span>
+</li>

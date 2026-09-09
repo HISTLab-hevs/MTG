@@ -1,0 +1,13 @@
+{# History reads textContent from the rendered reply. #}
+<div class="chat-turn">
+  <p class="chat-msg chat-msg-user">{{ message }}</p>
+  <div class="chat-msg chat-msg-assistant chat-msg-rich">{{ reply_html }}</div>
+  {% if sources %}
+  <div class="chat-sources">
+    <span class="chat-sources-label">Sources</span>
+    {% for s in sources %}
+    <span class="chat-source"><span class="chat-source-num">{{ s.number }}</span>{{ s.filename }} · p. {{ s.page_number }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

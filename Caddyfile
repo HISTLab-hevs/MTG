@@ -1,0 +1,34 @@
+# HTTPS-only. Ports come from HTTP_PORT / HTTPS_PORT (set in .env by setup.sh,
+# which picks 80/443 when free and falls back when they are taken). Certificates
+# are issued by Caddy's internal CA for whatever hostname or IP the server is
+# reached at; browsers warn once because that CA is not publicly trusted.
+
+{
+	local_certs
+	http_port {$HTTP_PORT}
+	https_port {$HTTPS_PORT}
+	# Clients connecting by IP send no SNI; serve them the localhost cert.
+	default_sni localhost
+	# Caddy's own redirects assume the standard 80/443 pair, which breaks once
+	# setup.sh falls back to high ports — the one below is written by hand.
+	auto_https disable_redirects
+}
+
+# The HTTP listener only redirects; it never proxies, so nothing is served in the
+# clear. 308 keeps the method, so a redirected POST is not downgraded to a GET.
+:{$HTTP_PORT} {
+	redir https://{host}:{$HTTPS_PORT}{uri} 308
+}
+
+https:// {
+	tls internal {
+		on_demand
+	}
+	# No preload/includeSubDomains: this also serves bare IPs and internal
+	# hostnames, where those would over-commit.
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy web:8000 {
+		# The app only sees Caddy's plain-HTTP hop, so tell it the client's scheme.
+		header_up X-Forwarded-Proto https
+	}
+}

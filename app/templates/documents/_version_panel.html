@@ -1,0 +1,107 @@
+<div {% if version.is_processing %}
+     hx-get="/courses/{{ course.id }}/documents/{{ document.id }}/panel?version_id={{ version.id }}"
+     hx-trigger="every 3s"
+     hx-target="#version-panel"
+     hx-swap="innerHTML"
+     {% endif %}>
+
+  <section class="card version-meta">
+    <span class="version-meta-info">
+      Version {{ version.version_number }}
+      · uploaded {{ version.created_at.strftime("%d %b %Y, %H:%M") }}
+      {% if version.page_count %}· {{ version.page_count }} pages{% endif %}
+      · {{ (version.file_size_bytes / 1048576) | round(1) }} MB
+    </span>
+    <span class="badge badge-{{ version.status }}">
+      {% if version.is_processing %}<span class="spinner spinner-sm"></span>{% endif %}
+      {{ status_label(version.status) }}
+    </span>
+  </section>
+
+  {% if version.status == 'failed' and version.error_message %}
+    <div class="alert alert-error">{{ version.error_message }}</div>
+  {% endif %}
+
+  {% if version.is_processing %}
+    <section class="card">
+      <h2>Processing document</h2>
+      <p class="text-muted">
+        {% if version.page_count %}
+          {{ view.extracted_pages }} of {{ version.page_count }} pages read.
+        {% else %}
+          Rendering pages…
+        {% endif %}
+        The document will appear here once processing is complete.
+      </p>
+      {% if version.page_count %}
+        <div class="progress">
+          <div class="progress-bar"
+               style="--progress-width: {{ (100 * view.extracted_pages / version.page_count) | round }}%"></div>
+        </div>
+      {% endif %}
+    </section>
+  {% else %}
+    {% if view.failed_pages %}
+      <div class="alert alert-error">
+        Extraction failed for page{{ 's' if view.failed_pages | length > 1 }}
+        {{ view.failed_pages | join(', ') }}.
+      </div>
+    {% endif %}
+
+    {% if diff %}
+      <section class="card version-diff">
+        <div class="report-block-head">
+          <h2>Changes since v{{ diff.prev_number }}</h2>
+        </div>
+        {% if diff.has_changes %}
+          <p class="text-muted version-diff-lead">
+            Comparing this upload to the previous version:
+          </p>
+          <ul class="version-diff-list">
+            {% if diff.changed %}
+              <li class="vd-changed">
+                <span class="vd-dot"></span>
+                <strong>Changed</strong> page{{ 's' if diff.changed | length > 1 }}
+                {{ diff.changed | join(', ') }}
+              </li>
+            {% endif %}
+            {% if diff.added %}
+              <li class="vd-added">
+                <span class="vd-dot"></span>
+                <strong>Added</strong> page{{ 's' if diff.added | length > 1 }}
+                {{ diff.added | join(', ') }}
+              </li>
+            {% endif %}
+            {% if diff.removed %}
+              <li class="vd-removed">
+                <span class="vd-dot"></span>
+                <strong>Removed</strong> page{{ 's' if diff.removed | length > 1 }}
+                {{ diff.removed | join(', ') }}
+              </li>
+            {% endif %}
+            {% if diff.unchanged %}
+              <li class="vd-unchanged">
+                <span class="vd-dot"></span>
+                {{ diff.unchanged }} page{{ 's' if diff.unchanged > 1 }} unchanged
+              </li>
+            {% endif %}
+          </ul>
+          <p class="text-muted version-diff-hint">
+            Re-running the analysis re-checks the rules against this version; issues
+            you fixed on the changed pages will clear from the report.
+          </p>
+        {% else %}
+          <p class="text-muted">
+            This upload is identical to v{{ diff.prev_number }}: same pages, nothing changed.
+          </p>
+        {% endif %}
+      </section>
+    {% endif %}
+
+    <section class="card viewer-pane viewer-pane-full">
+      <iframe class="pdf-frame"
+              src="/courses/{{ course.id }}/documents/{{ document.id }}/file?version_id={{ version.id }}"
+              title="{{ document.filename }}"></iframe>
+    </section>
+  {% endif %}
+</div>

@@ -1,0 +1,68 @@
+You are writing the overall review of a university course for the professor who
+teaches it. Per-document checks have already run; below is, for each document,
+the grouped issues a deterministic rule engine found. Do NOT invent new
+problems, only synthesise what is reported.
+
+Course: {{ course_title }}
+Documents analysed: {{ section_count }}
+Rule checks passed: {{ passed }} / {{ checked }}
+
+Per-document issues (authoritative):
+{% for s in sections %}
+### {{ s.filename }} ({{ s.document_type | doc_type_label }})
+{{ s.issues_md or "No issues reported." }}
+
+{% endfor %}
+
+Do NOT introduce a problem, category, or metric that the per-document issues
+above do not contain, and do not speculate about the engine's internal
+reasoning. Synthesise only what is reported.
+{% if never_applicable %}
+For your background only (do NOT list or restate these in your output, the
+report shows them separately in plain language): some conditional checks found
+nothing to judge anywhere, e.g. because no document carries graded assessment
+content or AI is never mentioned. You may reflect such an absence in ONE plain
+sentence of the summary when it is pedagogically central, but never as a
+technical list:
+{% for n in never_applicable %}
+- {{ n.rule }}
+{% endfor %}
+{% endif %}
+Constructive alignment is judged by a separate pass and shown in its own report
+block, do not write about alignment here.
+Write two Markdown blocks. Be concise and operational, the professor wants a
+tight read, not an essay. This is the place to handle a problem that recurs
+across documents: say it ONCE here, as a pattern, naming exactly which documents
+share it, so the per-document sections below need not repeat it at length.
+
+Never use em dashes (—) or en dashes (–) in prose: write a comma, a colon, or two sentences instead. Hyphens inside words are fine.
+
+Write factually, not with evaluative adjectives. State what is present or missing
+and its consequence for students, in neutral language a professor would accept, not sweeping verdicts. Prefer "The syllabus lists grading components without
+weights" over "The course suffers from a pervasive lack of rigour"; drop words
+like pervasive, severe, poor, weak, strong, excellent, superficial. Describe the
+fact and its effect, and let the professor judge.
+
+- "summary": an overall judgement of the course as a whole, how coherent and
+  complete it is, and the cross-cutting patterns. When the same kind of problem
+  appears in several documents, name it as one pattern and list the documents it
+  spans by their exact filenames (e.g. "Several graded tasks set no AI policy, assessment1.pdf, assessment2.pdf, and the block-3 slides"), rather than
+  restating it per document. Synthesise only the issues above. Cite documents by
+  their exact filename as written above; do
+  NOT invent a count ("five of the six…") or a range ("blocks 2–5") unless it is
+  exactly right, when unsure, just name the documents. Keep it to one tight
+  paragraph of at most 3–4 sentences; avoid long run-on sentences.
+- "solutions": general, course-level recommendations that go beyond any single
+  document (sequencing, consistency between materials, a shared template that
+  fixes a recurring gap in one move). A Markdown list of at most 4 actionable
+  bullets, each one sentence opening with a short bold label naming the action
+  (e.g. "**Shared AI-policy template:**"), specific to this course, never
+  generic advice that would fit any course.
+
+Each block's value is a single Markdown STRING. Write a bullet list as real
+Markdown lines separated by "\n" (e.g. "- first\n- second"). Never put a
+JavaScript/JSON-style array or set of quoted strings inside a value, no
+{"a","b"} and no ["a","b"]; that text would render literally, braces and all.
+
+Return ONLY this JSON object, no prose around it:
+{"summary": "<markdown>", "solutions": "<markdown>"}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block topbar_title %}About{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav">
+  {% if course %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  <div class="sidebar-section">{{ course.title }}</div>
+  <a class="nav-item" href="/courses/{{ course.id }}/overview">Overview</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/materials">Material</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/rules">Rules</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/report">Analysis</a>
+  {% else %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Mind the Gap</h1>
+  <p class="text-muted">
+    Adapting Higher Education to the Age of AI. Who is behind the project, and
+    what this tool does with your material.
+  </p>
+</div>
+
+<section class="card about-intro">
+  <img class="about-logo" src="/static/img/about/logo.png" alt="Mind the Gap"
+       width="229" height="82">
+  <div class="about-intro-body">
+    <h2>About the project</h2>
+    {% for paragraph in abstract %}
+    <p>{{ paragraph }}</p>
+    {% endfor %}
+    <p class="about-more">
+      <a class="btn btn-sm" href="{{ site_url }}" target="_blank" rel="noopener">
+        Visit the project site
+        <span class="about-external" aria-hidden="true">↗</span>
+      </a>
+    </p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>The Consortium</h2>
+  <ul class="about-orgs">
+    {% for o in organizations %}
+    <li class="about-org">
+      <a class="about-org-logo-box" href="{{ o.url }}" target="_blank" rel="noopener">
+        <img class="about-org-logo" src="/static/img/about/{{ o.logo }}"
+             alt="{{ o.name }}" loading="lazy">
+      </a>
+      <span class="about-org-text">
+        <span class="about-org-name">{{ o.name }}</span>
+        <span class="about-org-sub">{{ o.subtitle }}</span>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>People</h2>
+  {% for team in teams %}
+  <h3 class="about-team-name">{{ team.name }}</h3>
+  <ul class="about-people">
+    {% for p in team.people %}
+    <li class="about-person">
+      <img class="about-photo" src="/static/img/about/{{ p.photo }}"
+           alt="{{ p.name }}" width="88" height="88" loading="lazy">
+      <span class="about-person-text">
+        <a class="about-person-name" href="{{ p.url }}" target="_blank" rel="noopener">
+          {{ p.name }}
+        </a>
+        <span class="about-person-role">{{ p.role }}</span>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Contacts</h2>
+  <p class="text-muted about-contacts-lead">Project coordinators.</p>
+  <ul class="about-contacts">
+    {% for c in contacts %}
+    <li>
+      <span class="about-contact-name">{{ c.name }}</span>
+      <span class="about-contact-lines">{{ c.lines | join(" · ") }}</span>
+      <a href="mailto:{{ c.email }}">{{ c.email }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+  <p class="text-muted about-note">
+    Write to either about the project itself. For a problem with this tool,
+    contact whoever runs your institution's instance.
+  </p>
+</section>
+
+<section class="card">
+  <h2>How your material is handled</h2>
+  <ul class="about-list">
+    <li>
+      <strong>Nothing you upload is modified.</strong>
+      The tool reads your documents and writes a report. Your files stay as you
+      uploaded them, with every version kept.
+    </li>
+    <li>
+      <strong>Verdicts are deterministic.</strong>
+      Whether a rule passes or fails is decided by the rule itself over the
+      facts found in your document, not by a model's opinion. The model explains
+      findings and drafts suggestions; it never decides them.
+    </li>
+    <li>
+      <strong>Every finding carries its evidence.</strong>
+      Each result points at the passage that produced it, so you can check the
+      tool rather than trust it.
+    </li>
+  </ul>
+</section>
+
+<section class="card guide-start">
+  <div>
+    <h2>New here?</h2>
+    <p class="text-muted">
+      The guide walks through the four screens in the order you use them.
+    </p>
+  </div>
+  <a class="btn btn-primary"
+     href="/how-it-works{% if course %}?course_id={{ course.id }}{% endif %}">
+    Read how it works
+  </a>
+</section>
+{% endblock %}

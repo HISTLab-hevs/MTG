@@ -1,0 +1,68 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 HES-SO Valais-Wallis
+
+This license covers the project's documentation, not its source code. The
+source code is licensed separately under the MIT license, in the LICENSE file
+alongside this one.
+
+WHAT THIS COVERS
+
+  README.md
+  docs/installation.md
+  docs/usage.md
+  docs/api.md
+  docs/prompt_rule_framework.md
+  docs/source/           Sphinx sources for the generated API reference
+  app/rules/default_rules.yaml   the default rule set and its source notes
+
+Everything else in this repository is source code, covered by LICENSE.
+
+Where a file is both documentation and code, such as the default rule set and
+the prompt templates, you may use it under either license.
+
+TERMS
+
+You are free to:
+
+  Share   copy and redistribute the material in any medium or format
+  Adapt   remix, transform, and build upon the material
+
+for any purpose, including commercially, under the following terms:
+
+  Attribution   You must give appropriate credit, provide a link to the
+                license, and indicate if changes were made. You may do so in
+                any reasonable manner, so long as it does not suggest the
+                licensor endorses you or your use.
+
+  No additional restrictions
+                You may not apply legal terms or technological measures that
+                legally restrict others from doing anything the license
+                permits.
+
+The full legal text is at:
+
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+A plain-language summary is at:
+
+  https://creativecommons.org/licenses/by/4.0/
+
+SPDX identifier: CC-BY-4.0
+
+HOW TO ATTRIBUTE
+
+When reusing this documentation, a notice of this form satisfies the
+attribution term:
+
+  "MTG - Mind The Gap documentation" by HES-SO Valais-Wallis, licensed under
+  CC BY 4.0. Source: <repository URL>
+
+Indicate any changes you made, for example by adding "Modified from the
+original."
+
+DISCLAIMER
+
+The material is offered as-is. HES-SO Valais-Wallis makes no representations
+or warranties of any kind concerning it, and disclaims liability for damages
+resulting from its use to the fullest extent permitted by law.

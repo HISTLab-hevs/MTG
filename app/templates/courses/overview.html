@@ -1,0 +1,283 @@
+{% extends "courses/course_base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+{% macro run_banner(run, course) %}
+<a class="overview-run-live" href="/courses/{{ course.id }}/report">
+  <span class="badge badge-extracting">
+    <span class="spinner spinner-sm"></span>
+    {% if run.status == "pending" %}Queued
+    {% elif run.status == "reporting" %}Writing report
+    {% else %}Analyzing{% endif %}
+  </span>
+  <span class="overview-run-text">
+    {% if run.status == "pending" %}
+      Waiting for a free worker. It starts by itself.
+    {% elif run.status == "reporting" %}
+      All documents checked, the report is being written.
+    {% elif run.current_document %}
+      Document {{ run.documents_done + 1 }} of {{ run.total_documents }}:
+      <strong>{{ run.current_document }}</strong>
+      {% if run.current_pages_total %}
+        · page {{ run.current_pages_done }} of {{ run.current_pages_total }}
+      {% endif %}
+    {% else %}
+      Your analysis is starting.
+    {% endif %}
+  </span>
+  <span class="report-open-chevron" aria-hidden="true">></span>
+</a>
+{% endmacro %}
+
+<div class="page-header">
+  <h1>{{ course.title }}</h1>
+  {% if course.description %}
+    <p class="text-muted">{{ course.description }}</p>
+  {% endif %}
+</div>
+
+{% if setup.next_step %}
+<section class="card setup-guide">
+  <div class="setup-intro">
+    <h2>Get this course reviewed</h2>
+    <p class="text-muted">
+      Upload the documents you already teach with and run the analysis. You get a
+      report on what each one is missing, with a suggested fix. The rules in between
+      are set up for you, and you can adjust them whenever you want.
+    </p>
+  </div>
+
+  <ol class="setup-steps">
+    <li class="setup-step {{ 'is-done' if setup.has_materials else 'is-next' }}">
+      {% if setup.has_materials %}
+        <span class="setup-step-num is-tick" aria-hidden="true"></span>
+      {% else %}
+        <span class="setup-step-num" aria-hidden="true">1</span>
+      {% endif %}
+      <div class="setup-step-body">
+        <h3>Upload your material</h3>
+        <p>
+          Your syllabus, slides, exams or rubrics, as PDFs. Tell the tool what each
+          file is, because that decides which rules apply to it.
+        </p>
+        {% if setup.has_materials %}
+          <p class="setup-step-state">
+            {{ stats.total }} uploaded{% if stats.processing %}, {{ stats.processing }} still being read{% endif %}.
+          </p>
+        {% else %}
+          <a class="btn btn-primary btn-sm" href="/courses/{{ course.id }}/materials">Upload materials</a>
+        {% endif %}
+      </div>
+    </li>
+
+    <li class="setup-step">
+      <span class="setup-step-num" aria-hidden="true">2</span>
+      <div class="setup-step-body">
+        <h3>Tailor the rules <span class="setup-step-tag">optional</span></h3>
+        <p>
+          A rule is one thing a document has to do, like naming the outcomes an exam
+          covers. The course already runs a standard set based on good teaching
+          practice, so you can skip this. Switch off what does not fit your course,
+          or add your own rule in plain English.
+        </p>
+        {% if setup.active_rules %}
+          <p class="setup-step-state text-muted">
+            {{ setup.active_rules }} standard rules are running.
+            <a href="/courses/{{ course.id }}/rules">Adjust them</a>
+          </p>
+        {% else %}
+          <p class="setup-step-state text-muted">
+            The standard set applies until you change it.
+            <a href="/courses/{{ course.id }}/rules">See the rules</a>
+          </p>
+        {% endif %}
+      </div>
+    </li>
+
+    <li class="setup-step {{ 'is-next' if setup.next_step == 'analysis' }}">
+      <span class="setup-step-num" aria-hidden="true">3</span>
+      <div class="setup-step-body">
+        <h3>Run the analysis</h3>
+        <p>
+          Every rule is checked against every document. You get a health score, the
+          issues worth fixing first, and the exact line in the file that caused each one.
+        </p>
+        <div id="setup-run-slot">
+          {% if active_run %}
+            {{ run_banner(active_run, course) }}
+          {% elif setup.next_step == 'analysis' %}
+            <a class="btn btn-primary btn-sm" href="/courses/{{ course.id }}/report">Run the analysis</a>
+          {% else %}
+            <p class="setup-step-state text-muted">Needs at least one material.</p>
+          {% endif %}
+        </div>
+      </div>
+    </li>
+  </ol>
+
+  <p class="setup-foot text-muted">
+    Not sure what a rule or a health score is?
+    <a href="/how-it-works?course_id={{ course.id }}">Read how it works</a>.
+  </p>
+</section>
+{% endif %}
+
+{% if setup.has_materials %}
+<div class="stat-row">
+  <div class="card stat-card">
+    <span class="stat-value">{{ stats.total }}</span>
+    <span class="stat-label">Material</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-value">{{ stats.processing }}</span>
+    <span class="stat-label">Processing</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-value">{{ stats.ready }}</span>
+    <span class="stat-label">Ready</span>
+  </div>
+  <div class="card stat-card">
+    <span class="stat-value {{ 'is-warn' if stats.failed }}">{{ stats.failed }}</span>
+    <span class="stat-label">Failed</span>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid-2col">
+  <section class="card">
+    <h2>Latest documents</h2>
+    {% if recent %}
+      <ul class="item-list">
+        {% for view in recent %}
+        <li class="item-row">
+          <a class="item-link"
+             href="/courses/{{ course.id }}/documents/{{ view.document.id }}">
+            {{ view.document.filename }}
+          </a>
+          <span class="badge badge-{{ view.version.status }}">
+            {{ status_label(view.version.status) }}
+          </span>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">
+        <p>Your uploaded files will be listed here.</p>
+        <p class="text-muted">
+          PDFs only, and you can replace a file later without losing its history.
+        </p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="report-block-head">
+      <h2>Course analysis</h2>
+      {% if overview_report %}
+      <span class="text-muted overview-report-date">
+        {{ overview_report.report.created_at.strftime("%Y-%m-%d %H:%M") }}
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="overview-run-slot">
+      {% if active_run %}{{ run_banner(active_run, course) }}{% endif %}
+    </div>
+
+    {% if overview_report %}
+      {% set m = overview_report.metrics %}
+      {% if m %}
+      <div class="overview-scores">
+        <div class="overview-score">
+          <span class="overview-score-val">{{ m.health_score }}<span>/100</span></span>
+          <span class="overview-score-label">Course health</span>
+        </div>
+        {% if m.ai_readiness_score is not none %}
+        <div class="overview-score">
+          <span class="overview-score-val">{{ m.ai_readiness_score }}<span>/100</span></span>
+          <span class="overview-score-label">AI-readiness</span>
+        </div>
+        {% endif %}
+        <div class="overview-score">
+          <span class="overview-score-val {{ 'is-warn' if m.high_severity_failures }}">
+            {{ m.high_severity_failures }}
+          </span>
+          <span class="overview-score-label">High-severity issues</span>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if overview_report.top %}
+      <h3 class="report-sub">Fix these first</h3>
+      <ul class="overview-priorities">
+        {% for p in overview_report.top %}
+        <li>
+          <span class="badge badge-sev badge-sev-{{ p.severity }}"
+                title="{{ p.severity | capitalize }} severity">
+            {{ sev_letter(p.severity) }}
+            <span class="sr-only">{{ p.severity | capitalize }} severity</span>
+          </span>
+          <strong>{{ p.filename }}</strong>: {{ p.rule_text }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-muted">No failing checks. Every rule passed in the latest run.</p>
+      {% endif %}
+
+      <div class="overview-actions">
+        <a class="btn btn-primary" href="/courses/{{ course.id }}/report/view">View report</a>
+        <a class="btn btn-ghost" href="/courses/{{ course.id }}/report">Re-run analysis</a>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No analysis yet.</p>
+        <p class="text-muted">
+          After a run this shows your health score and the issues to fix first,
+          each one pointing at the document and rule behind it.
+        </p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+
+{% if active_run %}
+<script>
+  // Refresh both banners together; reload when the run ends.
+  (function () {
+    const SELECTORS = [".overview-run-slot", "#setup-run-slot"];
+    let done = false;
+
+    const tick = async () => {
+      if (done) return;
+      let body;
+      try {
+        const res = await fetch(window.location.pathname, { cache: "no-store" });
+        if (!res.ok) return;
+        body = await res.text();
+      } catch (err) {
+        return; // offline or a server hiccup: try again on the next tick
+      }
+      // A finished run returns no banners.
+      if (!body.includes("overview-run-live")) {
+        done = true;
+        clearInterval(timer);
+        window.location.reload();
+        return;
+      }
+
+      const fresh = new DOMParser().parseFromString(body, "text/html");
+      SELECTORS.forEach((sel) => {
+        const from = fresh.querySelector(sel);
+        const into = document.querySelector(sel);
+        if (from && into) into.innerHTML = from.innerHTML;
+      });
+    };
+
+    const timer = setInterval(tick, 3000);
+    // Check immediately in case the run already finished.
+    tick();
+  })();
+</script>
+{% endif %}
+{% endblock %}

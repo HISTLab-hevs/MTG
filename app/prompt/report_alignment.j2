@@ -1,0 +1,46 @@
+You are checking the CONSTRUCTIVE ALIGNMENT of a university course for the
+professor who teaches it: do the learning objectives the course states actually
+get taught by the material and exercised by the graded work, and do the parts
+of the course connect to each other?
+
+This is the one cross-document judgement of the report. It is not produced by
+the rule engine; you judge it directly, but ONLY from the evidence below, never from outside knowledge, and never inventing content a document does not
+contain.
+
+Course: {{ course_title }}
+
+Learning objectives and course plan, from {{ syllabus_filename }}:
+{{ syllabus_text }}
+
+What each document contains (one factual summary per document):
+{% for d in documents %}
+### {{ d.filename }} ({{ d.document_type | doc_type_label }})
+{{ d.summary }}
+
+{% endfor %}
+
+Judge exactly these questions, in order:
+1. COVERAGE, for each objective/outcome or major planned topic the syllabus
+   states: is it actually taught somewhere (name the document(s))? An objective
+   taught nowhere is a finding.
+2. ASSESSMENT, is each stated objective exercised by some graded work
+   (assessment, project, exam)? An objective that is taught but never assessed
+   is a finding; graded work that tests something no objective mentions is too.
+3. CONNECTION, do the parts hang together (material building toward the graded
+   work, units referencing each other), or are there isolated pieces?
+
+Write a short Markdown note (3–6 sentences, or a few tight bullets):
+- Name objectives and documents by their exact wording/filenames, never counts
+  or ranges you are not sure of.
+- If the syllabus states no explicit learning objectives, say that first: it is
+  the primary alignment gap, and then judge coverage against the syllabus's
+  planned topics instead.
+- State what aligns well in one sentence at most; spend the words on the gaps.
+- If the evidence genuinely shows no gap, say the course is aligned and stop, never invent a gap to have something to report.
+Never use em dashes (—) or en dashes (–) in prose: write a comma, a colon, or two sentences instead. Hyphens inside words are fine.
+
+- Write for a professor, in plain language, factually, without evaluative
+  adjectives.
+
+Return ONLY this JSON object, no prose around it:
+{"alignment": "<markdown>"}

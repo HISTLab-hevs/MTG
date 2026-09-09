@@ -1,0 +1,316 @@
+{% set reporting = latest_run and latest_run.status == "reporting" %}
+{% set queued = latest_run and latest_run.status == "pending" and queue_ahead %}
+{% set running = latest_run and latest_run.status in ("pending", "running", "reporting") %}
+
+<section class="card">
+  <div class="report-header">
+    <div>
+      <h2>Course analysis</h2>
+      <p class="text-muted">
+        {{ ready_count }} processed document{{ "s" if ready_count != 1 }} ready for analysis.
+      </p>
+    </div>
+    <div class="report-run-state">
+      {% if queued %}
+        <span class="badge badge-muted">
+          <span class="spinner spinner-sm"></span>
+          Queued · {{ queue_ahead }} report{{ "s" if queue_ahead > 1 }} ahead
+        </span>
+      {% elif reporting %}
+        <span class="badge badge-extracting">
+          <span class="spinner spinner-sm"></span> Writing report…
+        </span>
+      {% elif running %}
+        <span class="badge badge-extracting">
+          <span class="spinner spinner-sm"></span> Analyzing…
+        </span>
+      {% elif latest_run and latest_run.status == "completed" %}
+        <span class="badge badge-ready">Completed</span>
+        <span class="text-muted run-time">
+          {{ latest_run.created_at.strftime("%Y-%m-%d %H:%M") }}
+        </span>
+      {% elif latest_run and latest_run.status == "failed" %}
+        <span class="badge badge-failed">Failed</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" action="/courses/{{ course.id }}/report/analyze">
+    <button class="btn btn-primary"
+            {% if ready_count == 0 or running or unchanged %}disabled
+            title="{% if running %}Analysis in progress.{% elif unchanged %}Nothing has changed since the last analysis.{% else %}Process at least one material first.{% endif %}"{% endif %}>
+      {{ "Re-run analysis" if report.has_results else "Run analysis" }}
+    </button>
+  </form>
+
+  {% if unchanged and not running %}
+  <p class="hint hint-info">
+    <strong>Nothing to re-analyse.</strong>
+    Your material and rules are exactly the ones the latest analysis ran on, so
+    a new run would reach the same results. Change something first:
+    <a href="/courses/{{ course.id }}/materials">upload a new version of a document</a>
+    or
+    <a href="/courses/{{ course.id }}/rules">add, edit or switch off a rule</a>,
+    and the analysis becomes available again.
+  </p>
+  {% endif %}
+
+  {% if queued %}
+  <div class="analysis-progress">
+    <p class="text-muted analysis-progress-label">
+      Your analysis is queued behind {{ queue_ahead }} other
+      report{{ "s" if queue_ahead > 1 }}. It will start automatically as soon as
+      a worker is free. You can leave this page and come back.
+    </p>
+    <div class="progress">
+      <div class="progress-bar progress-bar-indeterminate"></div>
+    </div>
+  </div>
+  {% elif reporting %}
+  <div class="analysis-progress">
+    <p class="text-muted analysis-progress-label">
+      All documents checked. The model is writing the course report…
+    </p>
+    <div class="progress">
+      <div class="progress-bar progress-bar-indeterminate"></div>
+    </div>
+  </div>
+  {% elif running and latest_run.total_documents %}
+  <div class="analysis-progress">
+    <p class="text-muted analysis-progress-label">
+      {% if latest_run.current_document %}
+        Document {{ latest_run.documents_done + 1 }} of {{ latest_run.total_documents }}:
+        <strong>{{ latest_run.current_document }}</strong>
+        {% if latest_run.current_pages_total %}
+          · page {{ latest_run.current_pages_done }} of {{ latest_run.current_pages_total }}
+        {% endif %}
+      {% else %}
+        Finishing up…
+      {% endif %}
+    </p>
+    {# Render progress width here to prevent jumps after polling. #}
+    <div class="progress">
+      <div class="progress-bar js-progress-bar"
+           style="--progress-width: {{ latest_run.progress_pct }}%"
+           data-pct="{{ latest_run.progress_pct }}"
+           role="progressbar" aria-valuemin="0" aria-valuemax="100"
+           aria-valuenow="{{ latest_run.progress_pct }}"></div>
+    </div>
+  </div>
+  {% elif latest_run and latest_run.status == "failed" %}
+  <p class="hint hint-warn">
+    The last analysis didn't finish and may have been interrupted. Your uploaded
+    material and rules are unchanged; press <strong>Re-run analysis</strong> to
+    try again.
+  </p>
+  {% endif %}
+
+  {% if report.has_results %}
+  <ul class="item-list report-docs">
+    {% for doc in report.documents %}
+      {% if doc.verdicts %}
+      <li>
+        <details class="report-doc" data-key="doc-{{ doc.document_id }}">
+          <summary class="report-doc-summary-row">
+            <span class="report-doc-chevron" aria-hidden="true">></span>
+            <span class="report-doc-title">{{ doc.filename }}</span>
+            <span class="badge badge-muted">{{ doc_type_label(doc.document_type) }}</span>
+            <span class="report-doc-counts">
+              {% if doc.failed %}
+                <span class="count-fail">{{ doc.failed }} failed</span>
+              {% endif %}
+              <span class="count-pass">{{ doc.passed }}/{{ doc.checked }} passed</span>
+            </span>
+          </summary>
+          <ul class="item-list verdict-list">
+            {% for v in doc.verdicts %}
+            <li class="item-row verdict-row verdict-{{ v.outcome }}">
+              <div class="verdict-main">
+                <span class="verdict-ident">
+                  {% if v.rule.code %}<span class="badge badge-code">{{ v.rule.code }}</span>{% endif %}
+                  <span class="badge badge-sev badge-sev-{{ v.severity }}"
+                        title="{{ v.severity | capitalize }} severity">
+                    {{ sev_letter(v.severity) }}
+                    <span class="sr-only">{{ v.severity | capitalize }} severity</span>
+                  </span>
+                </span>
+                <span class="rule-text">{{ v.rule.text }}</span>
+                {% if v.error_message %}
+                  <span class="verdict-note">{{ v.error_message }}</span>
+                {% endif %}
+                {% if v.outcome in ("pass", "fail", "na") %}
+                  {% if v.informative_facts or v.has_evidence_quotes %}
+                  <details class="verdict-evidence" data-key="ev-{{ doc.document_id }}-{{ v.rule.id }}">
+                    <summary>
+                      Evidence
+                      <span class="verdict-evidence-hint">{{ v.evidence_caption }}</span>
+                    </summary>
+                    {% if v.informative_facts %}
+                    <ul class="verdict-facts">
+                      {% for f in v.informative_facts %}
+                      <li class="verdict-fact">
+                        <span class="fact-label">{{ f.label }}:</span>
+                        {% set items = f.value_display_items %}
+                        {% if items %}
+                        <ul class="fact-items">
+                          {% for it in items %}<li>{{ it }}</li>{% endfor %}
+                        </ul>
+                        {% else %}
+                        <span class="fact-value">{{ f.value_display }}</span>
+                        {% endif %}
+                      </li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if v.has_evidence_quotes %}
+                    <ul class="verdict-quotes">
+                      {% for q in v.evidence_quotes %}
+                      <li class="fact-quote">
+                        “{{ q.quote }}”
+                        {% if q.page is not none %}<span class="badge badge-muted">p.{{ q.page }}</span>{% endif %}
+                      </li>
+                      {% endfor %}
+                    </ul>
+                    {% endif %}
+                  </details>
+                  {% else %}
+                  <p class="verdict-evidence-flat">{{ v.evidence_caption }}</p>
+                  {% endif %}
+                {% endif %}
+              </div>
+              <span class="verdict-badge">
+                {% if v.outcome == "pass" %}
+                  <span class="badge badge-ready">Pass</span>
+                {% elif v.outcome == "fail" %}
+                  <span class="badge badge-failed">Fail</span>
+                {% elif v.outcome == "na" %}
+                  <span class="badge badge-muted">Not applicable</span>
+                {% elif v.outcome == "skipped" %}
+                  <span class="badge badge-muted">Skipped</span>
+                {% else %}
+                  <span class="badge badge-failed">Error</span>
+                {% endif %}
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+      </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+  {% elif not running %}
+  <p class="hint">
+    The analysis checks each of your active rules against every document and tells
+    you, for each one, whether it passes or fails.
+  </p>
+  {% endif %}
+</section>
+
+<section class="card report-list-card">
+  <div class="report-block-head report-list-head">
+    <h2>Reports</h2>
+    {% if report_entries | length > 1 %}
+    <span class="text-muted">{{ report_entries | length }} runs</span>
+    <span class="report-head-actions">
+      <span class="text-muted report-compare-count" id="report-compare-count"></span>
+      <button class="btn btn-sm" type="submit" form="report-compare-form"
+              id="report-compare-btn" disabled
+              title="Tick two reports below to compare them">
+        {{ icon.compare() }} Compare
+      </button>
+    </span>
+    {% endif %}
+  </div>
+
+  {% if report_entries %}
+  {# External checkboxes avoid nesting comparison and delete forms. #}
+  <form id="report-compare-form" action="/courses/{{ course.id }}/report/compare" method="get"></form>
+  <div class="report-list-form">
+    <ul class="report-list">
+      {% for e in report_entries %}
+      <li class="report-list-item {{ 'is-latest' if loop.first }}">
+        {% if report_entries | length > 1 %}
+        <span class="report-pick">
+          <label class="report-pick-opt" title="Select this report for comparison">
+            <input type="checkbox" name="ids" value="{{ e.report.id }}"
+                   class="report-pick-box" form="report-compare-form"
+                   {{ 'checked' if loop.index <= 2 }}>
+            <span class="report-pick-text">Compare</span>
+          </label>
+        </span>
+        {% endif %}
+
+        <span class="report-list-main">
+          <a class="report-list-open" href="/courses/{{ course.id }}/report/{{ e.report.id }}/view">
+            {{ e.report.created_at.strftime("%d %b %Y, %H:%M") }}
+          </a>
+          {% if loop.first %}<span class="badge badge-ready">Latest</span>{% endif %}
+          <span class="report-list-scores">
+            {% if e.metrics %}
+              <span class="report-list-score">
+                <span class="report-list-score-val">{{ e.metrics.health_score }}<span class="report-list-score-max">/100</span></span>
+                <span class="report-list-score-label">Health</span>
+              </span>
+              <span class="report-list-score">
+                {% if e.metrics.ai_readiness_score is not none %}
+                <span class="report-list-score-val">{{ e.metrics.ai_readiness_score }}<span class="report-list-score-max">/100</span></span>
+                {% else %}
+                <span class="report-list-score-val is-none">Not assessed</span>
+                {% endif %}
+                <span class="report-list-score-label">AI-readiness</span>
+              </span>
+              <span class="report-list-score">
+                <span class="report-list-score-val {{ 'is-warn' if e.metrics.high_severity_failures }}">
+                  {{ e.metrics.high_severity_failures }}
+                </span>
+                <span class="report-list-score-label">High-severity</span>
+              </span>
+            {% else %}
+              <span class="report-list-score">
+                <span class="report-list-score-val is-none">Not assessed</span>
+                <span class="report-list-score-label">Scores</span>
+              </span>
+            {% endif %}
+          </span>
+        </span>
+
+        <span class="report-list-actions icon-actions">
+          <form method="post"
+                action="/courses/{{ course.id }}/report/{{ e.report.id }}/delete"
+                data-confirm="Delete the report from {{ e.report.created_at.strftime('%d %b %Y, %H:%M') }}? It will no longer be available to open or compare. This cannot be undone."
+                data-confirm-label="Delete report">
+            <button class="btn-icon btn-icon-danger" type="submit"
+                    title="Delete this report"
+                    aria-label="Delete the report from {{ e.report.created_at.strftime('%d %b %Y, %H:%M') }}">
+              {{ icon.trash() }}
+            </button>
+          </form>
+        </span>
+        <span class="report-list-go" aria-hidden="true">{{ icon.chevron() }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if report_entries | length < 2 %}
+    <p class="hint report-list-foot">
+      Run the analysis again to build up a history you can compare.
+    </p>
+    {% endif %}
+  </div>
+
+  {# app.js binds once to avoid duplicate listeners after polling. #}
+  {% elif running %}
+    <div class="empty-state">
+      <p class="text-muted">Writing the report from the rule results…</p>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No report generated yet.</p>
+      <p class="text-muted">
+        Run the analysis to produce a written course report from the rule
+        results.
+      </p>
+    </div>
+  {% endif %}
+</section>

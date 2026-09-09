@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}My courses{% endblock %}
+{% block topbar_title %}My courses{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav">
+  <a class="nav-item active" href="/courses">My courses</a>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>My courses</h1>
+  <p class="text-muted">Create a course, upload material, and review it.</p>
+</div>
+
+<div class="courses-page">
+  <section class="card course-create-card">
+    <h2>Create course</h2>
+    <form class="form course-create-form" method="post" action="/courses">
+      <label class="form-field">
+        <span class="field-label-row">
+          <span>Title</span>
+          <span class="char-count" data-count-for="title">0/80</span>
+        </span>
+        <input type="text" name="title" required maxlength="80" placeholder="e.g. Operating Systems">
+      </label>
+      <label class="form-field">
+        <span class="field-label-row">
+          <span>Description</span>
+          <span class="char-count" data-count-for="description">0/240</span>
+        </span>
+        <textarea class="auto-grow" name="description" rows="2" maxlength="240" placeholder="Optional short description"></textarea>
+      </label>
+      <button class="btn btn-primary" type="submit">Create course</button>
+    </form>
+  </section>
+
+  <section class="courses-section">
+    <h2>Courses</h2>
+    {% if courses %}
+      <div class="course-grid">
+        {% for course in courses %}
+        <div class="course-tile-wrap">
+          <a class="course-tile" href="/courses/{{ course.id }}/overview">
+            <span class="course-tile-title">{{ course.title }}</span>
+            <span class="course-tile-description">
+              {{ course.description or "No description yet." }}
+            </span>
+            <span class="course-tile-meta">{{ course.documents | length }} document(s)</span>
+          </a>
+          <div class="course-tile-actions icon-actions">
+            <button class="btn-icon" type="button"
+                    title="Edit course" aria-label="Edit “{{ course.title }}”"
+                    hx-get="/courses/{{ course.id }}/edit"
+                    hx-target="#course-modal-root" hx-swap="innerHTML">
+              {{ icon.pencil() }}
+            </button>
+            <form class="course-tile-delete" method="post"
+                  action="/courses/{{ course.id }}/delete"
+                  data-confirm="Delete “{{ course.title }}”? This permanently removes the course and everything in it: all material, versions, rules and reports. This cannot be undone."
+                  data-confirm-label="Delete course">
+              <button class="btn-icon btn-icon-danger" type="submit"
+                      title="Delete course" aria-label="Delete “{{ course.title }}”">
+                {{ icon.trash() }}
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div id="course-modal-root"></div>
+    {% else %}
+      <div class="empty-state card">
+        <p>No courses yet.</p>
+        <p class="text-muted">Create your first course to start uploading material.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

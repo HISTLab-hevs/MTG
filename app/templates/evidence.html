@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Sources{% endblock %}
+{% block topbar_title %}Sources{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav">
+  {% if course %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  <div class="sidebar-section">{{ course.title }}</div>
+  <a class="nav-item" href="/courses/{{ course.id }}/overview">Overview</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/materials">Material</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/rules">Rules</a>
+  <a class="nav-item" href="/courses/{{ course.id }}/report">Analysis</a>
+  {% else %}
+  <a class="nav-item nav-back" href="/courses">&larr; My courses</a>
+  {% endif %}
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Sources</h1>
+  <p class="text-muted">
+    Where the rules this tool ships with come from: the project's own faculty
+    focus groups, and published work on teaching and assessment. Each default
+    rule carries a reference mark linking to its entry here.
+  </p>
+</div>
+
+<section class="card">
+  <ol class="ref-list">
+    {% for number, source in sources %}
+    <li class="ref-entry" id="ref-{{ number }}">
+      <span class="ref-num" aria-hidden="true">{{ number }}</span>
+      <div class="ref-body">
+        <h2 class="ref-title">{{ source.title }}</h2>
+        <p class="ref-citation">{{ source.citation }}</p>
+        {% if source.url %}
+        <p class="ref-link">
+          <a href="{{ source.url }}" target="_blank" rel="noopener">
+            {{ source.url }} <span class="about-external" aria-hidden="true">↗</span>
+          </a>
+        </p>
+        {% endif %}
+        {% if source.rules %}
+        <p class="ref-rules">
+          <span class="ref-rules-label">Rules:</span>
+          {% for code in source.rules %}
+          <span class="badge badge-code">{{ code }}</span>
+          {% endfor %}
+        </p>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<p class="hint">
+  A rule is inspired by the work it cites, not a mechanical implementation of
+  it. Rules you write yourself carry no reference, and any default rule can be
+  switched off on the Rules page.
+</p>
+{% endblock %}

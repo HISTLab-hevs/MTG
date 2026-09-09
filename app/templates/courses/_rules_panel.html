@@ -1,0 +1,198 @@
+{% if alert %}
+  <div class="alert alert-{{ alert[0] }}">{{ alert[1] }}</div>
+{% endif %}
+<div id="rules-panel"
+     {% if any_generating %}
+     hx-get="/courses/{{ course.id }}/rules/panel"
+     hx-trigger="every 2s"
+     hx-target="#rules-area"
+     hx-swap="innerHTML"
+     {% endif %}>
+
+  {% if rules_in_review %}
+  <section class="card">
+    <h2>Rules under review</h2>
+    <ul class="item-list">
+      {% for rule in rules_in_review %}
+      <li class="review-item review-{{ rule.status }}">
+        <div class="review-head">
+          <span class="badge badge-{{ rule.status }}">
+            {% if rule.is_generating %}<span class="spinner spinner-sm"></span>{% endif %}
+            {{ status_label(rule.status) }}
+          </span>
+          {% if rule.code %}<span class="badge badge-code">{{ rule.code }}</span>{% endif %}
+          <span class="badge badge-muted">{{ doc_type_label(rule.document_type) }}</span>
+          {% if rule.status == 'proposed' and rule.attempts > 1 %}
+            <span class="review-note">validated after {{ rule.attempts }} attempts</span>
+          {% endif %}
+        </div>
+        <blockquote class="review-request">{{ rule.source_prompt }}</blockquote>
+
+        {% if rule.is_generating %}
+          <p class="review-step">
+            {% if rule.attempts <= 1 %}
+              Turning your rule into an automatic check…
+            {% else %}
+              Attempt {{ rule.attempts }} of 3: refining the check so it works
+              correctly…
+            {% endif %}
+          </p>
+          {% if rule.error_message %}
+            <pre class="review-error">{{ rule.error_message }}</pre>
+          {% endif %}
+        {% elif rule.status == 'proposed' %}
+          <p class="rule-text">{{ rule.text }}</p>
+          {% if rule.rationale %}<p class="rule-why">{{ rule.rationale }}</p>{% endif %}
+          <div class="rule-meta">
+            <span class="badge badge-sev badge-sev-{{ rule.severity }}"
+                  title="{{ rule.severity | capitalize }} severity">
+              {{ sev_letter(rule.severity) }}
+              <span class="sr-only">{{ rule.severity | capitalize }} severity</span>
+            </span>
+            <span class="badge badge-muted">{{ category_label(rule.category) }}</span>
+          </div>
+          <div class="review-actions">
+            <form hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/accept"
+                  hx-target="#rules-area" hx-swap="innerHTML">
+              <button class="btn btn-primary btn-sm" type="submit">Accept</button>
+            </form>
+            <form hx-get="/courses/{{ course.id }}/rules/{{ rule.id }}/edit"
+                  hx-target="#rule-modal-root" hx-swap="innerHTML">
+              <button class="btn btn-sm" type="submit">Edit</button>
+            </form>
+            <form hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/reject"
+                  hx-target="#rules-area" hx-swap="innerHTML">
+              <button class="btn btn-sm" type="submit">Reject</button>
+            </form>
+          </div>
+        {% else %}
+          <p class="review-step">{{ rule.error_message }}</p>
+          <div class="review-actions">
+            <form hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/reject"
+                  hx-target="#rules-area" hx-swap="innerHTML">
+              <button class="btn btn-sm" type="submit">Dismiss</button>
+            </form>
+          </div>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% for document_type, rules in rule_sections %}
+  {# An empty sequence yields Undefined with first; check its length. #}
+  {% set has_custom = (rules | selectattr("origin", "equalto", "custom") | list | length) > 0 %}
+  <section class="card rule-section {{ 'has-actions' if has_custom }}">
+    <h2>{{ "All documents" if document_type is none else doc_type_label(document_type) }}</h2>
+    <div class="rule-head" aria-hidden="true">
+      <span class="rule-head-switch">On</span>
+      <span class="rule-head-main">Rule</span>
+      <span class="rule-head-area">Improvement area</span>
+      <span class="rule-head-type">Rule type</span>
+      <span class="rule-head-sev">Severity</span>
+      {% if has_custom %}<span class="rule-head-actions"></span>{% endif %}
+    </div>
+    <ul class="item-list rule-list">
+      {% for rule in rules %}
+      {% set other_types = (rule.document_type | doc_types | reject("equalto", document_type) | list) if document_type is not none else [] %}
+      <li class="item-row rule-row {{ 'rule-inactive' if not rule.is_active }}">
+        <form class="rule-switch"
+              hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/toggle"
+              hx-target="#rules-area" hx-swap="innerHTML">
+          <button class="rule-toggle {{ 'is-on' if rule.is_active }}" type="submit"
+                  role="switch" aria-checked="{{ 'true' if rule.is_active else 'false' }}"
+                  title="{{ 'Switch this rule off' if rule.is_active else 'Switch this rule on' }}">
+            <span class="rule-toggle-knob" aria-hidden="true"></span>
+            <span class="sr-only">
+              {{ "Disable" if rule.is_active else "Enable" }} this rule
+            </span>
+          </button>
+        </form>
+
+        <div class="rule-main">
+          {% if rule.code %}<span class="badge badge-code">{{ rule.code }}</span>{% endif %}
+          {% if not rule.is_active %}<span class="rule-off-tag">Off</span>{% endif %}
+          <span class="rule-text">{{ rule.text }}</span>
+          {% if rule.rationale %}<p class="rule-why">{{ rule.rationale }}</p>{% endif %}
+          {% set refs = rule_sources(rule.code) if rule.origin == 'default' else [] %}
+          {% if refs %}
+          <p class="rule-refs">
+            <span class="rule-refs-label">Source{{ "s" if refs | length > 1 }}:</span>
+            {%- for ref in refs %}
+            <a class="ref-mark"
+               href="/evidence?course_id={{ course.id }}#ref-{{ ref.number }}"
+               title="{{ ref.title }}">{{ ref.number }}</a>
+            {%- endfor %}
+            <span class="sr-only">
+              {{ refs | map(attribute='title') | join('; ') }}.
+            </span>
+          </p>
+          {% endif %}
+          {% if other_types %}
+          <p class="rule-shared">
+            Also applies to {{ other_types | map("doc_type_label") | join(", ") }}.
+            Editing, disabling, or deleting it affects those too.
+          </p>
+          {% endif %}
+        </div>
+
+        <span class="rule-cell rule-cell-area">
+          <span class="rule-area">{{ category_label(rule.category) }}</span>
+        </span>
+
+        <span class="rule-cell rule-cell-type">
+          {% if rule.origin == 'default' %}
+            <span class="badge badge-muted">Default</span>
+          {% else %}
+            <span class="badge badge-custom">Custom</span>
+          {% endif %}
+        </span>
+
+        <span class="rule-cell rule-cell-sev">
+          <span class="badge badge-sev badge-sev-{{ rule.severity }}"
+                title="{{ rule.severity | capitalize }} severity">
+            {{ sev_letter(rule.severity) }}
+            <span class="sr-only">{{ rule.severity | capitalize }} severity</span>
+          </span>
+        </span>
+
+        {% if has_custom %}
+        <span class="rule-actions icon-actions">
+          {% if rule.origin == 'custom' %}
+          <form hx-get="/courses/{{ course.id }}/rules/{{ rule.id }}/edit"
+                hx-target="#rule-modal-root" hx-swap="innerHTML">
+            <button class="btn-icon" type="submit"
+                    title="Edit this rule" aria-label="Edit this rule">
+              {{ icon.pencil() }}
+            </button>
+          </form>
+          <form hx-post="/courses/{{ course.id }}/rules/{{ rule.id }}/delete"
+                hx-target="#rules-area" hx-swap="innerHTML"
+                {% if other_types %}
+                hx-confirm="Delete this rule? It also applies to {{ other_types | map('doc_type_label') | join(', ') }} and will be removed there too."
+                {% else %}
+                hx-confirm="Delete this rule?"
+                {% endif %}
+                data-confirm-label="Delete">
+            <button class="btn-icon btn-icon-danger" type="submit"
+                    title="Delete this rule" aria-label="Delete this rule">
+              {{ icon.trash() }}
+            </button>
+          </form>
+          {% endif %}
+        </span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% else %}
+    {% if not rules_in_review %}
+    <div class="card empty-state">
+      <p>No rules defined for this course yet.</p>
+      <p class="text-muted">Add your first rule with the form above.</p>
+    </div>
+    {% endif %}
+  {% endfor %}
+</div>

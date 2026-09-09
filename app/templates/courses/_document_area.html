@@ -1,0 +1,23 @@
+{% if alert %}
+  <div class="alert alert-{{ alert[0] }}">{{ alert[1] }}</div>
+{% endif %}
+<div id="document-list"
+     {% if any_processing %}
+     hx-get="/courses/{{ course.id }}/materials/list"
+     hx-trigger="every 3s"
+     hx-target="#doc-area"
+     hx-swap="innerHTML"
+     {% endif %}>
+  {% if documents %}
+    <ul class="doc-list">
+      {% for view in documents %}
+        {% include "courses/_document_card.html" %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="card empty-state">
+      <p>No material uploaded yet.</p>
+      <p class="text-muted">Upload your first PDF above to get started.</p>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MTG{% endblock %} · Mind The Gap</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/img/favicon-64.png">
+  <link rel="icon" href="/static/img/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/static/img/favicon-64.png">
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/layout.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/mobile.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+  <meta name="htmx-config"
+        content='{"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"422","swap":true},{"code":"[45]..","swap":false,"error":true}]}'>
+  <script src="/static/js/app.js" defer></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark">MTG</span>
+      <span class="brand-sub">Mind The Gap</span>
+    </div>
+    {% block sidebar %}{% endblock %}
+    {% if user is defined and user and not user.is_admin %}
+    <div class="sidebar-foot">
+      <a class="nav-item {{ 'active' if active_tab == 'about' }}"
+         href="/about{% if course is defined and course %}?course_id={{ course.id }}{% endif %}">ⓘ About</a>
+      <a class="nav-item {{ 'active' if active_tab == 'evidence' }}"
+         href="/evidence{% if course is defined and course %}?course_id={{ course.id }}{% endif %}">&#8258; Sources</a>
+      <a class="nav-item {{ 'active' if active_tab == 'help' }}"
+         href="/how-it-works{% if course is defined and course %}?course_id={{ course.id }}{% endif %}">? How it works</a>
+    </div>
+    {% endif %}
+  </aside>
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-title">
+        {% block topbar_title %}{% endblock %}
+      </div>
+      <div class="topbar-user">
+        <span class="topbar-chip" title="Signed in as {{ user.full_name }}">
+          {{ icon.user() }}
+          <span class="user-name">{{ user.full_name }}</span>
+        </span>
+        {% if user.is_admin %}<span class="badge badge-muted">Admin</span>{% endif %}
+        <form method="post" action="/logout">
+          <button class="btn btn-ghost btn-sm" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+</body>
+</html>

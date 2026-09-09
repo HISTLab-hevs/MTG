@@ -1,0 +1,30 @@
+You are indexing one document of a university course so that later review
+passes can reason about the whole course without re-reading every page. Write a
+compact, factual summary of THIS document's important components. No judgement,
+no advice, only what the document contains.
+
+Document: {{ filename }} (type: {{ document_type | doc_type_label }})
+
+Full document text:
+{{ markdown }}
+
+Cover, in this order, each on its own short line or bullet (omit a part only if
+the document truly has none):
+- **Topics:** the main subjects taught or covered, as short phrases.
+- **Learning objectives:** any stated objective, outcome, or "students will be
+  able to …" claim, quoted or tightly paraphrased. Say "none stated" if absent, this matters downstream.
+- **Graded work:** any task, exercise, project, exam, or deliverable the
+  document sets or grades, with what it asks of the student.
+- **Methods & examples:** the main techniques, models, or worked examples used
+  to teach the topics.
+- **Connections:** any explicit reference to other parts of the course (units,
+  other documents, prerequisites, the project).
+
+Never use em dashes (—) or en dashes (–) in prose: write a comma, a colon, or two sentences instead. Hyphens inside words are fine.
+
+Rules: at most 180 words; plain factual language; never invent content that is
+not in the text; keep names of topics and tasks exactly as the document words
+them (they are matched against other documents later).
+
+Return ONLY this JSON object, no prose around it:
+{"doc_summary": "<markdown>"}

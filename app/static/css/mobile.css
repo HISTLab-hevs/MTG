@@ -1,0 +1,113 @@
+/* MTG · Mind The Gap, the phone and tablet overrides.
+   Loaded last and made entirely of media queries, so every rule here is a
+   deliberate override of a desktop layout rather than a base style. */
+
+@media (max-width: 768px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
+  /* Shell: sidebar becomes a horizontal scrollable top nav */
+  .app-shell { flex-direction: column; align-items: stretch; max-width: 100%; overflow-x: hidden; }
+  .app-main { width: 100%; min-width: 0; }
+  .sidebar { position: static; width: 100%; max-width: 100%; height: auto; overflow-y: visible; padding: 0.55rem 0.75rem; }
+  .sidebar-brand { flex-direction: row; align-items: baseline; gap: 0.5rem; padding: 0 0.25rem 0.5rem; }
+  .brand-sub { display: none; }
+  .sidebar-nav { width: 100%; min-width: 0; flex-direction: row; align-items: center; gap: 0.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sidebar-section { display: none; }
+  .nav-item { white-space: nowrap; padding: 0.4rem 0.6rem; }
+  .nav-item.active { box-shadow: inset 0 -2px 0 var(--accent); }
+
+  /* Topbar & content */
+  .topbar { align-items: flex-start; flex-wrap: wrap; max-width: 100%; padding: 0.55rem 1rem; gap: 0.35rem; }
+  .topbar-title { flex: 1 1 100%; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-user { flex: 1 1 100%; justify-content: flex-end; min-width: 0; }
+  .content { max-width: 100%; padding: 1rem; overflow-x: hidden; }
+
+  /* Forms: stack fields full-width; 16px stops iOS auto-zoom on focus */
+  .form-row, .upload-form,
+  .upload-form .form-field { flex-direction: column; align-items: stretch; }
+  .form-field input, .form-field select, .form-field textarea { width: 100%; min-width: 0; font-size: 16px; }
+  input[type="file"] { max-width: 100%; }
+  .form .btn { justify-content: center; }
+
+  /* Cards, tables, document detail */
+  .card { padding: 0.9rem 1rem; }
+  /* Material rows: the actions drop under the file instead of squeezing the
+     name into a sliver, and the meta line wraps freely. */
+  .doc-row { flex-direction: column; align-items: stretch; }
+  .doc-row-actions { justify-content: flex-start; padding-left: 1.65rem; }
+  .doc-name { flex: 1 1 auto; min-width: 0; }
+  .doc-row-meta { overflow-wrap: anywhere; }
+  .doc-versions { padding-left: 1rem; }
+  .table { display: block; overflow-x: auto; }
+  .doc-actions, .version-meta { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+  .version-tabs { flex-wrap: wrap; }
+  .pdf-frame { height: 60vh; }
+
+  /* Report view: stack the header above its actions so the title never collides
+     with the Download/History/Back buttons; let the buttons wrap and grow to
+     comfortable tap targets. (The report-split, issue-fix, charts and grids
+     already collapse via their own media queries in components.css.) */
+  .report-view-header { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+  .report-view-actions { flex-wrap: wrap; }
+  .report-view-actions .btn { flex: 1 1 auto; justify-content: center; }
+  /* The diagnostic bars use a fixed 9rem label column that crowds the bar on a
+     phone; give the label only what it needs and let the track take the rest. */
+  .metric-bar-row { grid-template-columns: minmax(5.5rem, auto) 1fr 2.5rem; gap: 0.5rem; }
+
+  /* List rows (a course rule, an analysed document, an overview line) put their
+     content and their actions on one space-between row; on a phone the action
+     buttons crowd the text, so stack them and let the actions sit left under the
+     content with comfortable spacing. Used by the rules, overview and report
+     panels alike. */
+  .item-row { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+  /* A rule row is a grid on desktop (switch · text · area · type · severity ·
+     actions). On a phone those columns cannot fit, so the row becomes two: the
+     switch stays beside the rule text (that pairing is what makes the switch
+     read as THAT rule's state), while the badges and the buttons wrap onto
+     their own line under the text, indented past the switch. The column headers
+     are meaningless once the columns are gone, so they are hidden. */
+  .rule-head { display: none; }
+  .rule-row {
+    grid-template-columns: 2.1rem auto auto 1fr;
+    gap: 0.55rem 0.6rem;
+    align-items: center;
+  }
+  /* Row 1: switch + the rule text across the rest.
+     Row 2: the two badges side by side, then the buttons. The improvement area
+     drops out: on a phone the row has to earn every line, and the area is
+     context the report already gives. */
+  .rule-main { grid-column: 2 / -1; }
+  .rule-cell-area { display: none; }
+  .rule-cell-type { grid-column: 2; }
+  .rule-cell-sev { grid-column: 3; }
+  .rule-actions { grid-column: 4; justify-content: flex-end; flex-wrap: wrap; }
+
+  /* Report rows: the before/after picker keeps its column, the scores wrap
+     under the date, and the actions drop to their own line. */
+  .report-list-item { flex-wrap: wrap; gap: 0.7rem; }
+  .report-list-main { flex: 1 1 60%; }
+  /* The scores are pushed right by margin-left:auto on desktop; on a phone they
+     belong under the date, aligned with it. */
+  .report-list-scores { margin-left: 0; flex-basis: 100%; gap: 0.4rem 1.1rem; }
+  .report-list-actions { flex-basis: 100%; justify-content: flex-end; }
+
+  /* Add-a-rule form: stack the rule text and the Generate button so neither is
+     squeezed, and let the button be a full-width tap target. */
+  .rule-text-row { flex-direction: column; align-items: stretch; }
+  .rule-text-row .btn { width: 100%; justify-content: center; }
+
+  /* Rule edit dialog: fill the viewport with a small margin, scroll if tall, and
+     stack the Severity/Area selects (handled by .form-row above). Native
+     <select> menus open as the OS picker on mobile, so nothing goes off-screen. */
+  .modal { width: calc(100vw - 1.5rem); max-width: calc(100vw - 1.5rem);
+    max-height: calc(100dvh - 1.5rem); overflow-y: auto; padding: 1rem 1.1rem; }
+  .rule-modal { width: calc(100vw - 1.5rem); }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; justify-content: center; }
+
+  /* "What the expression reads": stack the combiner under its label as a
+     full-width tap target; 16px text and roomy options for touch. */
+  .contract-field-agg .select-wrap { flex-basis: 100%; width: 100%; }
+  .select-trigger, .contract-field-agg .select-trigger { font-size: 16px; padding: 0.6rem 0.75rem; }
+  .select-option { font-size: 16px; padding: 0.65rem 0.7rem; }
+  .select-menu { max-height: 46vh; }
+}

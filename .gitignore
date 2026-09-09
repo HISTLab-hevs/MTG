@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+storage/
+.pytest_cache/
+caddy_data/
+document_test/
+.ruff_cache/
+
+# Sphinx
+docs/build/
+.docs-build-storage/
