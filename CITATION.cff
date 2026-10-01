@@ -1,0 +1,72 @@
+# How to cite this software.
+#
+# Citation File Format 1.2.0 — https://citation-file-format.github.io
+# GitHub renders a "Cite this repository" button from this file.
+#
+# The author order below follows the associated MTG publication.
+
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+
+title: "MTG — Mind the Gap"
+
+abstract: >-
+  MTG (Mind the Gap) is a platform designed to help educators review course
+  materials and redesign teaching and assessment for the age of generative AI.
+  It combines language-model-based document understanding with explicit
+  pedagogical rules to produce traceable findings and improvement suggestions.
+
+type: software
+
+repository-code: "https://github.com/HISTLab-hevs/MTG"
+url: "https://mtg.histlab.hevs.ch/"
+
+keywords:
+  - higher education
+  - generative AI
+  - artificial intelligence
+  - course review
+  - assessment design
+  - pedagogical rules
+  - educational technology
+
+authors:
+  - given-names: Valerio
+    family-names: Crocetti
+    orcid: "https://orcid.org/0009-0002-3760-6041"
+    affiliation: "HES-SO Valais-Wallis"
+
+  - given-names: Elia
+    family-names: Pacioni
+    orcid: "https://orcid.org/0000-0002-1557-4870"
+    affiliation: "HES-SO Valais-Wallis"
+
+  - given-names: Davide
+    family-names: Calvaresi
+    orcid: "https://orcid.org/0000-0001-9816-7439"
+    affiliation: "HES-SO Valais-Wallis"
+
+preferred-citation:
+  type: conference-paper
+  title: "Mind the Gap: An Educator-Oriented Hybrid AI Platform for Iterative Review of Course Material"
+  authors:
+    - given-names: Valerio
+      family-names: Crocetti
+      orcid: "https://orcid.org/0009-0002-3760-6041"
+      affiliation: "HES-SO Valais-Wallis"
+
+    - given-names: Elia
+      family-names: Pacioni
+      orcid: "https://orcid.org/0000-0002-1557-4870"
+      affiliation: "HES-SO Valais-Wallis"
+
+    - given-names: Davide
+      family-names: Calvaresi
+      orcid: "https://orcid.org/0000-0001-9816-7439"
+      affiliation: "HES-SO Valais-Wallis"
+
+  year: 2026
+  conference:
+    name: "1st International Workshop on AI Learning, Education And Practice (AI-LEAP 2026)"
+  publisher:
+    name: "CEUR-WS.org"
