@@ -110,6 +110,10 @@ not on ordinary commits or branch pushes. Update or remove obsolete tests
 alongside the behavior they cover. Validate deployments with the real endpoints. Rebuild a
 source installation after code changes with `./setup.sh`.
 
+## Citing
+
+If you use MTG — Mind the Gap in academic work, cite it with the metadata in [CITATION.cff](https://github.com/HISTLab-hevs/MTG/blob/main/CITATION.cff). GitHub turns that file into a ready-made citation under **Cite this repository**.
+
 ## Project and licensing
 
 Developed within **HES-SO R&I Mind the Gap: Adapting Higher Education to the Age
